@@ -72,6 +72,9 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
 //		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
+//		this.positions[6][5] = new PiecePosition("none", -1, -1, -1);
+		
+		
 		
 		this.positions[7][0] = new PiecePosition("r", 0, 7, 0);
 		this.positions[7][1] = new PiecePosition("n", 0, 7, 1);
@@ -255,6 +258,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
+	
+	
 	int[][] playQueen(PiecePosition piece) {
 		int[][] bishopMoves = this.playBishop(piece);
 		int[][] rookMoves = this.playRook(piece);
@@ -276,6 +281,34 @@ public class BoardFrame extends JFrame implements MouseListener{
 			k++;
 		}
 		
+		return possibleMoves;
+	}
+	
+	int[][] playKing(PiecePosition piece) {
+		ArrayList<int[]> moves = new ArrayList<>();
+		
+		int[] delRow = {-1, 1, 0};
+		int[] delCol = {-1, 1, 0};
+		
+		for(int i = 0; i<3; i++) {
+			for(int j = 0; j<3; j++) {
+				if(delRow[i] == 0 && delCol[j] == 0) continue;
+				
+				int row = piece.x + delRow[i], col = piece.y + delCol[j];
+				if(row < 0 || row >= 8 || col < 0 || col >= 8) continue;
+				if(positions[row][col].color == piece.color) continue;
+				int[] move = {row, col};
+				moves.add(move);
+			}
+		}
+		
+		int[][] possibleMoves = new int[moves.size()][2];
+		
+		for(int i = 0; i<moves.size(); i++) {
+			possibleMoves[i][0] = moves.get(i)[0];
+			possibleMoves[i][1] = moves.get(i)[1];
+			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+		}
 		return possibleMoves;
 	}
 	
@@ -307,7 +340,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 			System.out.println("Here in play with queen");
 			break;
 		case "k":
-			
+			possibleMoves = playKing(p);
+			System.out.println("Here in play with king");
 			break;
 		case "p":
 			
