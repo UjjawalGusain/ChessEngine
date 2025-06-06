@@ -68,6 +68,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 //		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
+//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
+//		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
 		
 		this.positions[7][0] = new PiecePosition("r", 0, 7, 0);
 		this.positions[7][1] = new PiecePosition("n", 0, 7, 1);
@@ -190,6 +192,67 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
+	int[][] playBishop(PiecePosition piece) {
+		ArrayList<int[]> moves = new ArrayList<>();
+		
+		// top-right
+		for(int k = -1; piece.x + k >= 0 && piece.y + k >= 0 && piece.x + k < 8 && piece.y + k < 8; k--) {
+			int row = piece.x + k, col = piece.y + k;
+			if(positions[row][col].color == piece.color) break;
+			int[] move = {row, col};
+			moves.add(move);
+			
+			if(positions[row][col].name != "none") {
+				break;
+			}
+		}
+		
+		// top-left
+		for(int k = -1; piece.x + k >= 0 && piece.y + Math.abs(k) >= 0 && piece.x + k < 8 && piece.y + Math.abs(k) < 8 ; k--) {
+			int row = piece.x + k, col = piece.y + Math.abs(k);
+			if(positions[row][col].color == piece.color) break;
+			int[] move = {row, col};
+			moves.add(move);
+			
+			if(positions[row][col].name != "none") {
+				break;
+			}
+		}
+		
+		// bottom-right
+		for(int k = -1; piece.x + Math.abs(k) >= 0 && piece.y + Math.abs(k) >= 0 && piece.x + Math.abs(k) < 8 && piece.y + Math.abs(k) < 8 ; k--) {
+			int row = piece.x + Math.abs(k), col = piece.y + Math.abs(k);
+			if(positions[row][col].color == piece.color) break;
+			int[] move = {row, col};
+			moves.add(move);
+			
+			if(positions[row][col].name != "none") {
+				break;
+			}
+		}
+		
+		// bottom-left
+		for(int k = -1; piece.x + Math.abs(k) >= 0 && piece.y + k >= 0 && piece.x + Math.abs(k) < 8 && piece.y + k < 8 ; k--) {
+			int row = piece.x + Math.abs(k), col = piece.y + k;
+			if(positions[row][col].color == piece.color) break;
+			int[] move = {row, col};
+			moves.add(move);
+			
+			if(positions[row][col].name != "none") {
+				break;
+			}
+		}
+		
+		int[][] possibleMoves = new int[moves.size()][2];
+		
+		for(int i = 0; i<moves.size(); i++) {
+			possibleMoves[i][0] = moves.get(i)[0];
+			possibleMoves[i][1] = moves.get(i)[1];
+			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+		}
+		return possibleMoves;
+	}
+	
 	public void play(int turn) {
 		
 		int i = selectedPosition[0], j = selectedPosition[1];
@@ -210,7 +273,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 			System.out.println("Here in play with knight");
 			break;
 		case "b":
-			
+			possibleMoves = playBishop(p);
+			System.out.println("Here in play with bishop");
 			break;
 		case "q":
 			
