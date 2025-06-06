@@ -70,6 +70,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
 //		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
+//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
+//		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
 		
 		this.positions[7][0] = new PiecePosition("r", 0, 7, 0);
 		this.positions[7][1] = new PiecePosition("n", 0, 7, 1);
@@ -253,6 +255,30 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
+	int[][] playQueen(PiecePosition piece) {
+		int[][] bishopMoves = this.playBishop(piece);
+		int[][] rookMoves = this.playRook(piece);
+		
+		
+		int[][] possibleMoves = new int[bishopMoves.length + rookMoves.length][2];
+		int k = 0;
+		for(int i = 0; i<bishopMoves.length; i++) {
+			possibleMoves[k][0] = bishopMoves[i][0];
+			possibleMoves[k][1] = bishopMoves[i][1];
+			System.out.printf("%d, %d\n", possibleMoves[k][0], possibleMoves[k][1]);
+			k++;
+		}
+		
+		for(int i = 0; i<rookMoves.length; i++) {
+			possibleMoves[k][0] = rookMoves[i][0];
+			possibleMoves[k][1] = rookMoves[i][1];
+			System.out.printf("%d, %d\n", possibleMoves[k][0], possibleMoves[k][1]);
+			k++;
+		}
+		
+		return possibleMoves;
+	}
+	
 	public void play(int turn) {
 		
 		int i = selectedPosition[0], j = selectedPosition[1];
@@ -277,7 +303,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 			System.out.println("Here in play with bishop");
 			break;
 		case "q":
-			
+			possibleMoves = playQueen(p);
+			System.out.println("Here in play with queen");
 			break;
 		case "k":
 			
