@@ -13,6 +13,7 @@ public class Piece extends JLabel {
 	int color;
 	String name;
 	int x, y;
+	Boolean selected = false;
 	
 	public Piece(String name, int color, int x, int y) {
 		this.name = name;
@@ -21,6 +22,10 @@ public class Piece extends JLabel {
 		this.y = y;
 		
 		set(90, 90);
+	}
+	
+	public void toggleSelected() {
+		selected = !selected;
 	}
 	
 	public void update(String newName, int newColor, int newX, int newY) {

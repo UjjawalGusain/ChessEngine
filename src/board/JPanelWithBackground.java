@@ -1,6 +1,7 @@
 package board;
 
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +12,9 @@ public class JPanelWithBackground extends JPanel {
 
   private Image backgroundImage;
 
-  public JPanelWithBackground(String fileName) throws IOException {
+  public JPanelWithBackground(String fileName, int width, int height) throws IOException {
+    super.setBounds(700, 0, width, height);
+    this.setLayout(new GridLayout(8,8,0,0));
     backgroundImage = ImageIO.read(new File(fileName));
   }
 

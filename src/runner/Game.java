@@ -17,7 +17,12 @@ public class Game {
 	public void startGame() throws IOException {
 		BoardFrame board = new BoardFrame("Chess Game");
         board.setFirstTime();
-       
         board.setBoard();
+        board.play(turn);
+        
+//        while(!board.didWin()) {
+//        	board.play();
+//        }
+        
 	}
 }
