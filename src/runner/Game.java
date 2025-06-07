@@ -15,7 +15,7 @@ public class Game {
 	}
 	
 	public void startGame() throws IOException {
-		BoardFrame board = new BoardFrame("Chess Game");
+		BoardFrame board = new BoardFrame("Chess Game", this.playerColor, this.aiColor);
         board.setFirstTime();
         board.setBoard();
         

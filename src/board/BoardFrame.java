@@ -26,17 +26,22 @@ public class BoardFrame extends JFrame implements MouseListener{
 	Boolean isPieceSelected = false;
 	int[] selectedPosition = {-1, -1};
 	
+	int playerOneColor;
+	int playerTwoColor;
+	int turn = 0;
+	
 	int boardWidth = 720, boardHeight = 720;
 	Piece[][] board = new Piece[8][8];
 	PiecePosition[][] positions = new PiecePosition[8][8];
 	JPanelWithBackground boardPanel;
-	public BoardFrame(String title) throws IOException {
+	public BoardFrame(String title, int playerOneColor, int playerTwoColor) throws IOException {
 		super(title);
 		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setBounds(700,0,boardWidth,boardHeight);
 		this.setLayout(new GridBagLayout());
-		
+		this.playerOneColor = playerOneColor;
+		this.playerTwoColor = playerTwoColor;
 		boardPanel = new JPanelWithBackground("images/board.png", boardWidth, boardHeight);
 		
 		this.add(boardPanel);
@@ -419,6 +424,11 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
+	private void toggleTurn() {
+		this.turn = this.turn == 1 ? 0 : 1;
+	}
+	
+	
 	private Boolean checkInFutureMoves(int[][] futureMoves, int currX, int currY) {
 		
 		for(int[] move : futureMoves) {
@@ -443,8 +453,9 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 		selectedPosition[0] = -1;
 		selectedPosition[1] = -1;
-		
+		this.toggleTurn();
 	}
+	
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -453,7 +464,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		Boolean wasFutureMove = false;
 		if((selectedPosition[0] != i || selectedPosition[1] != j) && selectedPosition[0] != -1) {
-			int[][] futureMoves = this.play(1);
+			int[][] futureMoves = this.play(this.turn);
 			
 			if(this.checkInFutureMoves(futureMoves, i, j)) {
 				wasFutureMove = true;
@@ -464,14 +475,15 @@ public class BoardFrame extends JFrame implements MouseListener{
 			
 		}
 		
-		
+		int tempTurn = this.turn;
 		if(!wasFutureMove) {
 			selectedPosition[0] = i;
 			selectedPosition[1] = j;
+		} else {
+			tempTurn = tempTurn == 1 ? 0 : 1; 
 		}
 
-		int[][] futureMoves = this.play(1);
-		
+		int[][] futureMoves = this.play(tempTurn);
 		if(!isPieceSelected && !wasFutureMove) {
 			positions[i][j].isSelected = true;
 			isPieceSelected = true;
