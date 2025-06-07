@@ -105,7 +105,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 				}
 				
 				if(positions[i][j].isFutureMove) {
-					board[i][j].setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
+					board[i][j].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
 				}
 				
 				boardPanel.add(board[i][j]);
@@ -419,29 +419,72 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
+	private Boolean checkInFutureMoves(int[][] futureMoves, int currX, int currY) {
+		
+		for(int[] move : futureMoves) {
+			if(currX == move[0] && currY == move[1]) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void changePosition(int currX, int currY, int[][] futureMoves) {
+		
+		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
+		positions[currX][currY].x = currX;
+		positions[currX][currY].y = currY;
+		positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
+		
+		positions[currX][currY].isSelected = false;
+		isPieceSelected = false;
+		for(int i1 = 0; i1<futureMoves.length; i1++) {
+			positions[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = false;
+		}
+		selectedPosition[0] = -1;
+		selectedPosition[1] = -1;
+		
+	}
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Piece piece = (Piece)e.getComponent();
-		if(piece.name == "none") return;
 		int i = piece.x, j = piece.y;
-		if(isPieceSelected && !positions[i][j].isSelected) return;
 		
-		if(!isPieceSelected) {
-			positions[i][j].isSelected = true;
+		Boolean wasFutureMove = false;
+		if((selectedPosition[0] != i || selectedPosition[1] != j) && selectedPosition[0] != -1) {
+			int[][] futureMoves = this.play(1);
+			
+			if(this.checkInFutureMoves(futureMoves, i, j)) {
+				wasFutureMove = true;
+				this.changePosition(i, j, futureMoves);
+			} else {
+				return;
+			}
+			
+		}
+		
+		
+		if(!wasFutureMove) {
 			selectedPosition[0] = i;
 			selectedPosition[1] = j;
+		}
+
+		int[][] futureMoves = this.play(1);
+		
+		if(!isPieceSelected && !wasFutureMove) {
+			positions[i][j].isSelected = true;
 			isPieceSelected = true;
-			int[][] futureMoves = this.play(0);
+
 			for(int i1 = 0; i1<futureMoves.length; i1++) {
 				positions[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = true;
 			}
 			
-		} else {
+		} else if(!wasFutureMove) {	
 			positions[i][j].isSelected = false;
 			isPieceSelected = false;
-			selectedPosition[0] = i;
-			selectedPosition[1] = j;
-			int[][] futureMoves = this.play(0);
+			
+			
 			for(int i1 = 0; i1<futureMoves.length; i1++) {
 				positions[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = false;
 			}
