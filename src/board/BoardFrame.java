@@ -59,13 +59,14 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		for(int i = 2; i<6; i++) {
 			for(int j = 0; j<8; j++) {
-				this.positions[i][j] = new PiecePosition("none", -1, -1, -1);
+				this.positions[i][j] = new PiecePosition("none", -1, i, j);
 			}
 		}
 		
 		for(int j = 0; j<8; j++) {
 			this.positions[6][j] = new PiecePosition("p", 0, 6, j);
 		}
+		
 //		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
 //		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
@@ -73,7 +74,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[6][5] = new PiecePosition("none", -1, -1, -1);
-		
+//		this.positions[5][4] = new PiecePosition("p", 1, 5, 4);
 		
 		
 		this.positions[7][0] = new PiecePosition("r", 0, 7, 0);
@@ -98,15 +99,19 @@ public class BoardFrame extends JFrame implements MouseListener{
 				
 				if(positions[i][j].isSelected) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
-					System.out.println("in setBoard but in selected");
+//					System.out.println("in setBoard but in selected");
 				} else {
 					board[i][j].setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+				}
+				
+				if(positions[i][j].isFutureMove) {
+					board[i][j].setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
 				}
 				
 				boardPanel.add(board[i][j]);
 			}
 		}
-		System.out.println("in setBoard");
+//		System.out.println("in setBoard");
         this.add(boardPanel);
         pack();
         this.setVisible(true);
@@ -259,7 +264,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
-	
 	int[][] playQueen(PiecePosition piece) {
 		int[][] bishopMoves = this.playBishop(piece);
 		int[][] rookMoves = this.playRook(piece);
@@ -283,6 +287,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		return possibleMoves;
 	}
+	
 	
 	int[][] playKing(PiecePosition piece) {
 		ArrayList<int[]> moves = new ArrayList<>();
@@ -312,15 +317,75 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
-	public void play(int turn) {
+	
+	int[][] playPawn(PiecePosition piece) {
+		ArrayList<int[]> moves = new ArrayList<>();
+		
+		// if black
+		if(piece.color == 1) {
+			if(piece.x == 1 && positions[piece.x+1][piece.y].name == "none" && positions[piece.x+2][piece.y].name == "none") {
+				int[] move = {piece.x + 2, piece.y};
+				moves.add(move);
+			} 
+			
+			if(piece.x + 1 < 8 && positions[piece.x+1][piece.y].name == "none") {
+				int[] move = {piece.x + 1, piece.y};
+				moves.add(move);
+			}
+			
+			if(piece.x + 1 < 8 && piece.y + 1 < 8 && positions[piece.x + 1][piece.y + 1].color != piece.color && positions[piece.x + 1][piece.y + 1].name != "none") {
+				int[] move = {piece.x + 1, piece.y + 1};
+				moves.add(move);
+			}
+			
+			if(piece.x + 1 < 8 && piece.y - 1 >= 0 && positions[piece.x + 1][piece.y - 1].color != piece.color && positions[piece.x + 1][piece.y - 1].name != "none") {
+				int[] move = {piece.x + 1, piece.y - 1};
+				moves.add(move);
+			}
+			
+		} else if(piece.color == 0) { // white
+			if(piece.x == 6 && positions[piece.x-1][piece.y].name == "none" && positions[piece.x-2][piece.y].name == "none") {
+				int[] move = {piece.x - 2, piece.y};
+				moves.add(move);
+			} 
+			
+			if(piece.x - 1 >= 0 && positions[piece.x-1][piece.y].name == "none") {
+				int[] move = {piece.x - 1, piece.y};
+				moves.add(move);
+			}
+			
+			if(piece.x - 1 >= 0 && piece.y - 1 >= 0 && positions[piece.x - 1][piece.y - 1].color != piece.color && positions[piece.x - 1][piece.y - 1].name != "none") {
+				int[] move = {piece.x - 1, piece.y - 1};
+				moves.add(move);
+			}
+			
+			if(piece.x - 1 >= 0 && piece.y + 1 < 8 && positions[piece.x - 1][piece.y + 1].color != piece.color && positions[piece.x - 1][piece.y + 1].name != "none") {
+				int[] move = {piece.x - 1, piece.y + 1};
+				moves.add(move);
+			}
+		}
+		
+		int[][] possibleMoves = new int[moves.size()][2];
+		
+		for(int i = 0; i<moves.size(); i++) {
+			possibleMoves[i][0] = moves.get(i)[0];
+			possibleMoves[i][1] = moves.get(i)[1];
+			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+		}
+		return possibleMoves;
+	}
+	
+	
+	public int[][] play(int turn) {
 		
 		int i = selectedPosition[0], j = selectedPosition[1];
-		if(i == -1 || j == -1) return;
+		int[][] possibleMoves = new int[0][2];
+		if(i == -1 || j == -1) return possibleMoves;
 		
 		PiecePosition p = positions[i][j];
-		if(p.color != turn) return;
-		System.out.println("Here in play");
-		int[][] possibleMoves;
+		if(p.color != turn) return possibleMoves;
+//		System.out.println("Here in play");
+		
 		
 		switch(p.name) {
 		case "r":
@@ -344,13 +409,14 @@ public class BoardFrame extends JFrame implements MouseListener{
 			System.out.println("Here in play with king");
 			break;
 		case "p":
-			
+			possibleMoves = playPawn(p);
+			System.out.println("Here in play with pawn");
 			break;
 		default:
-			System.out.println("Some error");
+			System.out.println("Selected none");
 			break;
 		}
-		
+		return possibleMoves;
 	}
 	
 	@Override
@@ -365,16 +431,26 @@ public class BoardFrame extends JFrame implements MouseListener{
 			selectedPosition[0] = i;
 			selectedPosition[1] = j;
 			isPieceSelected = true;
+			int[][] futureMoves = this.play(0);
+			for(int i1 = 0; i1<futureMoves.length; i1++) {
+				positions[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = true;
+			}
+			
 		} else {
 			positions[i][j].isSelected = false;
 			isPieceSelected = false;
+			selectedPosition[0] = i;
+			selectedPosition[1] = j;
+			int[][] futureMoves = this.play(0);
+			for(int i1 = 0; i1<futureMoves.length; i1++) {
+				positions[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = false;
+			}
 			selectedPosition[0] = -1;
 			selectedPosition[1] = -1;
 		}
+		
 		try {
-			this.play(0);
 			this.setBoard();
-			
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
