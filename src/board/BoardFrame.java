@@ -174,7 +174,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(i = 0; i<moves.size(); i++) {
 			possibleMoves[i][0] = moves.get(i)[0];
 			possibleMoves[i][1] = moves.get(i)[1];
-			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
 		}
 		return possibleMoves;
 	}
@@ -202,7 +202,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(int i = 0; i<moves.size(); i++) {
 			possibleMoves[i][0] = moves.get(i)[0];
 			possibleMoves[i][1] = moves.get(i)[1];
-			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
 		}
 		return possibleMoves;
 	}
@@ -263,7 +263,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(int i = 0; i<moves.size(); i++) {
 			possibleMoves[i][0] = moves.get(i)[0];
 			possibleMoves[i][1] = moves.get(i)[1];
-			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
 		}
 		return possibleMoves;
 	}
@@ -279,14 +279,14 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(int i = 0; i<bishopMoves.length; i++) {
 			possibleMoves[k][0] = bishopMoves[i][0];
 			possibleMoves[k][1] = bishopMoves[i][1];
-			System.out.printf("%d, %d\n", possibleMoves[k][0], possibleMoves[k][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[k][0], possibleMoves[k][1]);
 			k++;
 		}
 		
 		for(int i = 0; i<rookMoves.length; i++) {
 			possibleMoves[k][0] = rookMoves[i][0];
 			possibleMoves[k][1] = rookMoves[i][1];
-			System.out.printf("%d, %d\n", possibleMoves[k][0], possibleMoves[k][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[k][0], possibleMoves[k][1]);
 			k++;
 		}
 		
@@ -317,7 +317,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(int i = 0; i<moves.size(); i++) {
 			possibleMoves[i][0] = moves.get(i)[0];
 			possibleMoves[i][1] = moves.get(i)[1];
-			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
 		}
 		return possibleMoves;
 	}
@@ -375,11 +375,60 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(int i = 0; i<moves.size(); i++) {
 			possibleMoves[i][0] = moves.get(i)[0];
 			possibleMoves[i][1] = moves.get(i)[1];
-			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
+//			System.out.printf("%d, %d\n", possibleMoves[i][0], possibleMoves[i][1]);
 		}
 		return possibleMoves;
 	}
 	
+	private Boolean isGettingChecked(int color) {
+		
+		ArrayList<int[][]> possibleAttacks = new ArrayList<>();
+		int enemyKingX = -1, enemyKingY = -1;
+		
+		
+		
+		for(int i = 0; i<8; i++) {
+			for(int j = 0; j<8; j++) {
+				PiecePosition p = positions[i][j];
+				if(p.color == color && p.name == "k") {
+					enemyKingX = i;
+					enemyKingY = j;
+				}
+				if(p.color != color) {
+					switch(p.name) {
+					case "r":
+						possibleAttacks.add(playRook(p));
+						break;
+					case "b":
+						possibleAttacks.add(playBishop(p));
+						break;
+					case "n":
+						possibleAttacks.add(playKnight(p));
+						break;
+					case "q":
+						possibleAttacks.add(playQueen(p));
+						break;
+					case "k":
+						possibleAttacks.add(playKing(p));
+						break;
+					case "p":
+						possibleAttacks.add(playPawn(p));
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+		
+		for(int[][] attacks : possibleAttacks) {
+			for(int[] attack : attacks) {
+				int x = attack[0], y = attack[1];
+				if(x == enemyKingX && y == enemyKingY) return true;
+			}
+		}
+		return false;
+	}
 	
 	public int[][] play(int turn) {
 		
@@ -467,8 +516,13 @@ public class BoardFrame extends JFrame implements MouseListener{
 			int[][] futureMoves = this.play(this.turn);
 			
 			if(this.checkInFutureMoves(futureMoves, i, j)) {
-				wasFutureMove = true;
+				wasFutureMove = true;			
 				this.changePosition(i, j, futureMoves);
+				
+				System.out.printf("Turn: %d\n", this.turn);
+				if(isGettingChecked(this.turn)) {
+					System.out.printf("%d is getting checked\n", this.turn);
+				}
 			} else {
 				return;
 			}
