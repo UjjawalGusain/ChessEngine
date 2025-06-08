@@ -25,7 +25,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	private static final long serialVersionUID = 1L;
 	Boolean isPieceSelected = false;
 	int[] selectedPosition = {-1, -1};
-	
+	Boolean[] kingChecked = {false, false};
 	int playerOneColor;
 	int playerTwoColor;
 	int turn = 0;
@@ -102,15 +102,15 @@ public class BoardFrame extends JFrame implements MouseListener{
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
 				board[i][j].addMouseListener(this);
 				
-				if(positions[i][j].isSelected) {
+				if(positions[i][j].name == "k" && kingChecked[positions[i][j].color]) {
+					board[i][j].setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+				} else if(positions[i][j].isSelected) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
 //					System.out.println("in setBoard but in selected");
+				} else if(positions[i][j].isFutureMove) {
+					board[i][j].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
 				} else {
 					board[i][j].setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-				}
-				
-				if(positions[i][j].isFutureMove) {
-					board[i][j].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
 				}
 				
 				boardPanel.add(board[i][j]);
@@ -429,6 +429,56 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 		return false;
 	}
+		
+		private Boolean isGettingChecked(int color, PiecePosition[][] futurePossiblePositions) {
+			
+			ArrayList<int[][]> possibleAttacks = new ArrayList<>();
+			int enemyKingX = -1, enemyKingY = -1;
+			
+			
+			
+			for(int i = 0; i<8; i++) {
+				for(int j = 0; j<8; j++) {
+					PiecePosition p = futurePossiblePositions[i][j];
+					if(p.color == color && p.name == "k") {
+						enemyKingX = i;
+						enemyKingY = j;
+					}
+					if(p.color != color) {
+						switch(p.name) {
+						case "r":
+							possibleAttacks.add(playRook(p));
+							break;
+						case "b":
+							possibleAttacks.add(playBishop(p));
+							break;
+						case "n":
+							possibleAttacks.add(playKnight(p));
+							break;
+						case "q":
+							possibleAttacks.add(playQueen(p));
+							break;
+						case "k":
+							possibleAttacks.add(playKing(p));
+							break;
+						case "p":
+							possibleAttacks.add(playPawn(p));
+							break;
+						default:
+							break;
+						}
+					}
+				}
+			}
+		
+		for(int[][] attacks : possibleAttacks) {
+			for(int[] attack : attacks) {
+				int x = attack[0], y = attack[1];
+				if(x == enemyKingX && y == enemyKingY) return true;
+			}
+		}
+		return false;
+	}
 	
 	public int[][] play(int turn) {
 		
@@ -438,7 +488,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		PiecePosition p = positions[i][j];
 		if(p.color != turn) return possibleMoves;
-//		System.out.println("Here in play");
+		
 		
 		
 		switch(p.name) {
@@ -505,6 +555,28 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.toggleTurn();
 	}
 	
+	private PiecePosition[][] changePosition(int currX, int currY, int[][] futureMoves, Boolean copy) {
+		
+		PiecePosition[][] futurePossibleBoard = new PiecePosition[8][8];
+		for(int i = 0; i<8; i++) {
+			for(int j = 0; j<8; j++) {
+				futurePossibleBoard[i][j] = positions[i][j];
+			}
+		}
+
+		futurePossibleBoard[currX][currY] = futurePossibleBoard[selectedPosition[0]][selectedPosition[1]];
+		futurePossibleBoard[currX][currY].x = currX;
+		futurePossibleBoard[currX][currY].y = currY;
+		futurePossibleBoard[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
+		
+		futurePossibleBoard[currX][currY].isSelected = false;
+//		isPieceSelected = false;
+		for(int i1 = 0; i1<futureMoves.length; i1++) {
+			futurePossibleBoard[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = false;
+		}
+		return futurePossibleBoard;
+	}
+	
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -516,13 +588,33 @@ public class BoardFrame extends JFrame implements MouseListener{
 			int[][] futureMoves = this.play(this.turn);
 			
 			if(this.checkInFutureMoves(futureMoves, i, j)) {
+				System.out.printf("Turn 1: %d\n", this.turn);
+				
+				if(isGettingChecked(this.turn)) {
+					PiecePosition[][] pc = this.changePosition(i, j, futureMoves, true);
+					if(isGettingChecked(this.turn, pc)) {
+						System.out.println("Invalid move.");
+						return;
+					}
+				}
+				
 				wasFutureMove = true;			
 				this.changePosition(i, j, futureMoves);
 				
-				System.out.printf("Turn: %d\n", this.turn);
+				System.out.printf("Turn 2: %d\n", this.turn);
+				int oppTurn = this.turn == 1 ? 0 : 1;
 				if(isGettingChecked(this.turn)) {
-					System.out.printf("%d is getting checked\n", this.turn);
+					kingChecked[this.turn] = true;
+				} else {
+					kingChecked[this.turn] = false;
 				}
+				
+				if(isGettingChecked(oppTurn)) {
+					kingChecked[oppTurn] = true;
+				} else {
+					kingChecked[oppTurn] = false;
+				}
+				
 			} else {
 				return;
 			}
