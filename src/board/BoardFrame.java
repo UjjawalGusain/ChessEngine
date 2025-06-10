@@ -535,6 +535,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 	}
 	
+	
 	private PiecePosition[][] getCopy(PiecePosition[][] positions) {
 		PiecePosition[][] copy = new PiecePosition[8][8];
 		
@@ -544,6 +545,76 @@ public class BoardFrame extends JFrame implements MouseListener{
 			}
 		}
 		return copy;
+	}
+	
+	private Boolean changeAndCheckForCheckmate(int currX, int currY, int prevX, int prevY, PiecePosition[][] positions) {
+		
+		positions[currX][currY] = positions[prevX][prevY];
+		positions[currX][currY].x = currX;
+		positions[currX][currY].y = currY;
+		positions[prevX][prevY] = new PiecePosition("none", -1, currX, currY);
+		
+		if(isGettingChecked(this.turn, positions)) {
+			return true;
+		} 
+		return false;
+	}
+	
+	private int checkCheckmateForPiece(int turn, PiecePosition[][] positions, int i, int j) {
+		
+		int count = 0;
+		if(positions[i][j].color == turn) {
+			PiecePosition p = positions[i][j];
+			
+			int[][] moves = new int[0][2];
+			
+			switch(positions[i][j].name) {
+			case "r":
+				moves = this.playRook(p, positions);
+				break;
+			case "n":
+				moves = this.playKnight(p, positions);
+				break;
+			case "b":
+				moves = this.playBishop(p, positions);
+				break;
+			case "q":
+				moves = this.playQueen(p, positions);
+				break;
+			case "k":
+				moves = this.playKing(p, positions);
+				break;
+			case "p":
+				moves = this.playPawn(p, positions);
+				break;
+			default:
+				System.out.println("Error in checkCheckmateForPiece");
+				break;
+			}
+			
+			for(int[] move : moves) {
+				PiecePosition[][] pc = getCopy(positions);
+				
+				if(!changeAndCheckForCheckmate(move[0], move[1], p.x, p.y, pc)) {
+					count++;
+				} 
+			}
+		}	
+		
+		return count;
+	}
+	
+	private Boolean isGettingCheckmated(int turn, PiecePosition[][] positions) {
+		
+		int count = 0;
+		for(int i = 0; i<8; i++) {
+			for(int j = 0; j<8; j++) {
+				
+				count += checkCheckmateForPiece(turn, positions, i, j);
+				if(count > 0) return false;
+			}
+		}
+		return true;
 	}
 	
 	@Override
@@ -568,6 +639,13 @@ public class BoardFrame extends JFrame implements MouseListener{
 				int oppTurn = this.turn == 1 ? 0 : 1;
 				if(isGettingChecked(this.turn, positions)) {
 					kingChecked[this.turn] = true;
+					System.out.printf("%d is checked right now\n", this.turn);
+					
+					// Go through every possible move of this.turn, and check if for any possible possible isGettingChecked fails
+					if(isGettingCheckmated(this.turn, positions)) {
+						System.out.println("Checkmate");
+					}
+					
 				} else {
 					kingChecked[this.turn] = false;
 				}
