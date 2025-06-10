@@ -13,4 +13,14 @@ public class PiecePosition {
 		this.x = x;
 		this.y = y;
 	}
+	
+	PiecePosition(String name, int color, int x, int y, Boolean isSelected, Boolean isFutureMove) {
+		this.name = name;
+		this.color = color;
+		this.x = x;
+		this.y = y;
+		this.isFutureMove = isFutureMove;
+		this.isSelected = isSelected;
+	}
+	
 }

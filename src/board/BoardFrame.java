@@ -123,7 +123,7 @@ public class BoardFrame extends JFrame implements MouseListener{
         this.repaint();
     }
 	
-	int[][] playRook(PiecePosition piece) {
+	int[][] playRook(PiecePosition piece, PiecePosition[][] positions) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		
 		// upwards
@@ -179,7 +179,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
-	int[][] playKnight(PiecePosition piece) {
+	int[][] playKnight(PiecePosition piece, PiecePosition[][] positions) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		
 		int[] delRow = {-1, 1, -2, 2};
@@ -207,7 +207,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
-	int[][] playBishop(PiecePosition piece) {
+	int[][] playBishop(PiecePosition piece, PiecePosition[][] positions) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		
 		// top-right
@@ -269,9 +269,9 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
-	int[][] playQueen(PiecePosition piece) {
-		int[][] bishopMoves = this.playBishop(piece);
-		int[][] rookMoves = this.playRook(piece);
+	int[][] playQueen(PiecePosition piece, PiecePosition[][] positions) {
+		int[][] bishopMoves = this.playBishop(piece, positions);
+		int[][] rookMoves = this.playRook(piece, positions);
 		
 		
 		int[][] possibleMoves = new int[bishopMoves.length + rookMoves.length][2];
@@ -294,7 +294,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
-	int[][] playKing(PiecePosition piece) {
+	int[][] playKing(PiecePosition piece, PiecePosition[][] positions) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		
 		int[] delRow = {-1, 1, 0};
@@ -323,7 +323,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
-	int[][] playPawn(PiecePosition piece) {
+	int[][] playPawn(PiecePosition piece, PiecePosition[][] positions) {
 		ArrayList<int[]> moves = new ArrayList<>();
 		
 		// if black
@@ -380,7 +380,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
-	private Boolean isGettingChecked(int color) {
+	private Boolean isGettingChecked(int color, PiecePosition[][] positions) {
 		
 		ArrayList<int[][]> possibleAttacks = new ArrayList<>();
 		int enemyKingX = -1, enemyKingY = -1;
@@ -397,22 +397,22 @@ public class BoardFrame extends JFrame implements MouseListener{
 				if(p.color != color) {
 					switch(p.name) {
 					case "r":
-						possibleAttacks.add(playRook(p));
+						possibleAttacks.add(playRook(p, positions));
 						break;
 					case "b":
-						possibleAttacks.add(playBishop(p));
+						possibleAttacks.add(playBishop(p, positions));
 						break;
 					case "n":
-						possibleAttacks.add(playKnight(p));
+						possibleAttacks.add(playKnight(p, positions));
 						break;
 					case "q":
-						possibleAttacks.add(playQueen(p));
+						possibleAttacks.add(playQueen(p, positions));
 						break;
 					case "k":
-						possibleAttacks.add(playKing(p));
+						possibleAttacks.add(playKing(p, positions));
 						break;
 					case "p":
-						possibleAttacks.add(playPawn(p));
+						possibleAttacks.add(playPawn(p, positions));
 						break;
 					default:
 						break;
@@ -429,58 +429,25 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 		return false;
 	}
+	
+	public static void printBoard(PiecePosition[][] positions) {
 		
-		private Boolean isGettingChecked(int color, PiecePosition[][] futurePossiblePositions) {
-			
-			ArrayList<int[][]> possibleAttacks = new ArrayList<>();
-			int enemyKingX = -1, enemyKingY = -1;
-			
-			
-			
-			for(int i = 0; i<8; i++) {
-				for(int j = 0; j<8; j++) {
-					PiecePosition p = futurePossiblePositions[i][j];
-					if(p.color == color && p.name == "k") {
-						enemyKingX = i;
-						enemyKingY = j;
-					}
-					if(p.color != color) {
-						switch(p.name) {
-						case "r":
-							possibleAttacks.add(playRook(p));
-							break;
-						case "b":
-							possibleAttacks.add(playBishop(p));
-							break;
-						case "n":
-							possibleAttacks.add(playKnight(p));
-							break;
-						case "q":
-							possibleAttacks.add(playQueen(p));
-							break;
-						case "k":
-							possibleAttacks.add(playKing(p));
-							break;
-						case "p":
-							possibleAttacks.add(playPawn(p));
-							break;
-						default:
-							break;
-						}
-					}
+		System.out.println("Printing Positions Start");
+		
+		for(int i = 0; i<8; i++) {
+			for(int j = 0; j<8; j++) {
+				System.out.printf("%s ", positions[i][j].name);
+				if(positions[i][j].isSelected) {
+					System.out.printf("<-selected ");
 				}
 			}
-		
-		for(int[][] attacks : possibleAttacks) {
-			for(int[] attack : attacks) {
-				int x = attack[0], y = attack[1];
-				if(x == enemyKingX && y == enemyKingY) return true;
-			}
+			System.out.printf("\n");
 		}
-		return false;
+		
+		System.out.println("Printing Positions End");
 	}
 	
-	public int[][] play(int turn) {
+	public int[][] play(int turn, PiecePosition[][] positions) {
 		
 		int i = selectedPosition[0], j = selectedPosition[1];
 		int[][] possibleMoves = new int[0][2];
@@ -493,27 +460,27 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		switch(p.name) {
 		case "r":
-			possibleMoves = playRook(p);
+			possibleMoves = playRook(p, positions);
 			System.out.println("Here in play with rook");
 			break;
 		case "n":
-			possibleMoves = playKnight(p);
+			possibleMoves = playKnight(p, positions);
 			System.out.println("Here in play with knight");
 			break;
 		case "b":
-			possibleMoves = playBishop(p);
+			possibleMoves = playBishop(p, positions);
 			System.out.println("Here in play with bishop");
 			break;
 		case "q":
-			possibleMoves = playQueen(p);
+			possibleMoves = playQueen(p, positions);
 			System.out.println("Here in play with queen");
 			break;
 		case "k":
-			possibleMoves = playKing(p);
+			possibleMoves = playKing(p, positions);
 			System.out.println("Here in play with king");
 			break;
 		case "p":
-			possibleMoves = playPawn(p);
+			possibleMoves = playPawn(p, positions);
 			System.out.println("Here in play with pawn");
 			break;
 		default:
@@ -528,7 +495,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
-	private Boolean checkInFutureMoves(int[][] futureMoves, int currX, int currY) {
+	private Boolean checkInFutureMoves(int[][] futureMoves, int currX, int currY, PiecePosition[][] positions) {
 		
 		for(int[] move : futureMoves) {
 			if(currX == move[0] && currY == move[1]) {
@@ -538,7 +505,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return false;
 	}
 	
-	private void changePosition(int currX, int currY, int[][] futureMoves) {
+	private void changePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 		
 		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
 		positions[currX][currY].x = currX;
@@ -555,28 +522,29 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.toggleTurn();
 	}
 	
-	private PiecePosition[][] changePosition(int currX, int currY, int[][] futureMoves, Boolean copy) {
+	private void checkCanChangePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 		
-		PiecePosition[][] futurePossibleBoard = new PiecePosition[8][8];
-		for(int i = 0; i<8; i++) {
-			for(int j = 0; j<8; j++) {
-				futurePossibleBoard[i][j] = positions[i][j];
-			}
-		}
-
-		futurePossibleBoard[currX][currY] = futurePossibleBoard[selectedPosition[0]][selectedPosition[1]];
-		futurePossibleBoard[currX][currY].x = currX;
-		futurePossibleBoard[currX][currY].y = currY;
-		futurePossibleBoard[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
+		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
+		positions[currX][currY].x = currX;
+		positions[currX][currY].y = currY;
+		positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
 		
-		futurePossibleBoard[currX][currY].isSelected = false;
-//		isPieceSelected = false;
+		positions[currX][currY].isSelected = false;
 		for(int i1 = 0; i1<futureMoves.length; i1++) {
-			futurePossibleBoard[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = false;
+			positions[futureMoves[i1][0]][futureMoves[i1][1]].isFutureMove = false;
 		}
-		return futurePossibleBoard;
 	}
 	
+	private PiecePosition[][] getCopy(PiecePosition[][] positions) {
+		PiecePosition[][] copy = new PiecePosition[8][8];
+		
+		for(int i = 0; i<8; i++) {
+			for(int j = 0; j<8; j++) {
+				copy[i][j] = new PiecePosition(positions[i][j].name, positions[i][j].color, positions[i][j].x, positions[i][j].y, positions[i][j].isSelected, positions[i][j].isFutureMove);
+			}
+		}
+		return copy;
+	}
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -585,37 +553,37 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		Boolean wasFutureMove = false;
 		if((selectedPosition[0] != i || selectedPosition[1] != j) && selectedPosition[0] != -1) {
-			int[][] futureMoves = this.play(this.turn);
-			
-			if(this.checkInFutureMoves(futureMoves, i, j)) {
-				System.out.printf("Turn 1: %d\n", this.turn);
-				
-				if(isGettingChecked(this.turn)) {
-					PiecePosition[][] pc = this.changePosition(i, j, futureMoves, true);
-					if(isGettingChecked(this.turn, pc)) {
-						System.out.println("Invalid move.");
-						return;
-					}
+			int[][] futureMoves = this.play(this.turn, positions);
+			if(this.checkInFutureMoves(futureMoves, i, j, positions)) {
+				PiecePosition[][] pc = getCopy(positions);
+				checkCanChangePosition(i, j, futureMoves, pc);
+				if(isGettingChecked(this.turn, pc)) {
+					System.out.println("Invalid move.");
+					return;
 				}
-				
+
 				wasFutureMove = true;			
-				this.changePosition(i, j, futureMoves);
+				changePosition(i, j, futureMoves, positions);
 				
-				System.out.printf("Turn 2: %d\n", this.turn);
 				int oppTurn = this.turn == 1 ? 0 : 1;
-				if(isGettingChecked(this.turn)) {
+				if(isGettingChecked(this.turn, positions)) {
 					kingChecked[this.turn] = true;
 				} else {
 					kingChecked[this.turn] = false;
 				}
 				
-				if(isGettingChecked(oppTurn)) {
+				if(isGettingChecked(oppTurn, positions)) {
 					kingChecked[oppTurn] = true;
 				} else {
 					kingChecked[oppTurn] = false;
 				}
 				
 			} else {
+				try {
+					this.setBoard();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				return;
 			}
 			
@@ -629,7 +597,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 			tempTurn = tempTurn == 1 ? 0 : 1; 
 		}
 
-		int[][] futureMoves = this.play(tempTurn);
+		int[][] futureMoves = this.play(tempTurn, positions);
 		if(!isPieceSelected && !wasFutureMove) {
 			positions[i][j].isSelected = true;
 			isPieceSelected = true;
