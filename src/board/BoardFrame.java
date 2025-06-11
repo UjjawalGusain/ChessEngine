@@ -2,10 +2,12 @@ package board;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.List;
+import java.awt.PopupMenu;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -18,7 +20,13 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.border.Border;
+
+import win.PanelPopup;
+import win.WinPanel;
 
 
 public class BoardFrame extends JFrame implements MouseListener{
@@ -29,6 +37,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 	int playerOneColor;
 	int playerTwoColor;
 	int turn = 0;
+	
+	Boolean[] checkmate = {false, false};
 	
 	int boardWidth = 720, boardHeight = 720;
 	Piece[][] board = new Piece[8][8];
@@ -58,6 +68,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.positions[0][6] = new PiecePosition("n", 1, 0, 6);
 		this.positions[0][7] = new PiecePosition("r", 1, 0, 7);
 		
+		
 		for(int j = 0; j<8; j++) {
 			this.positions[1][j] = new PiecePosition("p", 1, 1, j);
 		}
@@ -72,6 +83,9 @@ public class BoardFrame extends JFrame implements MouseListener{
 			this.positions[6][j] = new PiecePosition("p", 0, 6, j);
 		}
 		
+		
+		this.positions[4][2] = new PiecePosition("b", 0, 4, 2);
+		this.positions[5][5] = new PiecePosition("q", 0, 5, 5);
 //		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
 //		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
@@ -118,6 +132,17 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 //		System.out.println("in setBoard");
         this.add(boardPanel);
+        System.out.printf("%B heheh\n", checkmate[this.turn]);
+        if(checkmate[this.turn]) {
+        	String winMessage = this.turn == 0 ? "Congrats, black wins!" : "Congrats, white wins!"; 
+        	System.out.println(winMessage);
+        	PanelPopup winPanel = new PanelPopup(winMessage);
+        	JPopupMenu menu = new JPopupMenu();
+        	menu.add(winPanel);
+        	System.out.println(winPanel.getX());
+        	menu.show();
+        }
+        
         pack();
         this.setVisible(true);
         this.repaint();
@@ -644,6 +669,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 					// Go through every possible move of this.turn, and check if for any possible possible isGettingChecked fails
 					if(isGettingCheckmated(this.turn, positions)) {
 						System.out.println("Checkmate");
+						checkmate[this.turn] = true;
 					}
 					
 				} else {
