@@ -23,8 +23,10 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import promotion.PopupMenuPromotion;
 import win.PanelPopup;
 import win.WinPanel;
 
@@ -83,19 +85,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 			this.positions[6][j] = new PiecePosition("p", 0, 6, j);
 		}
 		
-		
-		this.positions[4][2] = new PiecePosition("b", 0, 4, 2);
-		this.positions[5][5] = new PiecePosition("q", 0, 5, 5);
-//		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
-//		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
-//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
-//		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
-//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
-//		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
-//		this.positions[6][5] = new PiecePosition("none", -1, -1, -1);
-//		this.positions[5][4] = new PiecePosition("p", 1, 5, 4);
-		
-		
 		this.positions[7][0] = new PiecePosition("r", 0, 7, 0);
 		this.positions[7][1] = new PiecePosition("n", 0, 7, 1);
 		this.positions[7][2] = new PiecePosition("b", 0, 7, 2);
@@ -105,9 +94,23 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.positions[7][6] = new PiecePosition("n", 0, 7, 6);
 		this.positions[7][7] = new PiecePosition("r", 0, 7, 7);
 		
+		
+//		this.positions[4][2] = new PiecePosition("b", 0, 4, 2);
+//		this.positions[5][5] = new PiecePosition("q", 0, 5, 5);
+//		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
+//		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
+//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
+//		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
+//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
+//		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
+		this.positions[1][2] = new PiecePosition("p", 0, 1, 2);
+		this.positions[0][2] = new PiecePosition("none", -1, 0, 2);
+		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
+		this.positions[7][2] = new PiecePosition("none", 1, 7, 2);
 	}
 	
 	public void setBoard() throws IOException {
+		printBoard(positions);
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
 		
@@ -115,12 +118,16 @@ public class BoardFrame extends JFrame implements MouseListener{
 			for(int j = 0; j<8; j++) {
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
 				board[i][j].addMouseListener(this);
-				
-				if(positions[i][j].name == "k" && kingChecked[positions[i][j].color]) {
+				if(positions[i][j].name == "p" && positions[i][j].promote) {
+					PopupMenuPromotion pmp = new PopupMenuPromotion();
+					pmp.show(this, 200, 300);
+					
+					
+				}
+				else if(positions[i][j].name == "k" && kingChecked[positions[i][j].color]) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.RED, 3));
 				} else if(positions[i][j].isSelected) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
-//					System.out.println("in setBoard but in selected");
 				} else if(positions[i][j].isFutureMove) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
 				} else {
@@ -130,22 +137,26 @@ public class BoardFrame extends JFrame implements MouseListener{
 				boardPanel.add(board[i][j]);
 			}
 		}
-//		System.out.println("in setBoard");
+		
+		
         this.add(boardPanel);
-        System.out.printf("%B heheh\n", checkmate[this.turn]);
         if(checkmate[this.turn]) {
         	String winMessage = this.turn == 0 ? "Congrats, black wins!" : "Congrats, white wins!"; 
-        	System.out.println(winMessage);
+        	
         	PanelPopup winPanel = new PanelPopup(winMessage);
-        	JPopupMenu menu = new JPopupMenu();
-        	menu.add(winPanel);
-        	System.out.println(winPanel.getX());
-        	menu.show();
+   
+        	PopupFactory pf = new PopupFactory();
+        	int winPanelX = boardPanel.getX() + boardPanel.getWidth()/2 - 150;
+        	int winPanelY = boardPanel.getY() + boardPanel.getHeight()/2;
+        	Popup po = pf.getPopup(boardPanel, winPanel, winPanelX, winPanelY);
+        	
+        	po.show();
         }
         
         pack();
         this.setVisible(true);
         this.repaint();
+        
     }
 	
 	int[][] playRook(PiecePosition piece, PiecePosition[][] positions) {
@@ -462,8 +473,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				System.out.printf("%s ", positions[i][j].name);
-				if(positions[i][j].isSelected) {
-					System.out.printf("<-selected ");
+				if(positions[i][j].promote) {
+					System.out.printf("<-promote ");
 				}
 			}
 			System.out.printf("\n");
@@ -486,27 +497,27 @@ public class BoardFrame extends JFrame implements MouseListener{
 		switch(p.name) {
 		case "r":
 			possibleMoves = playRook(p, positions);
-			System.out.println("Here in play with rook");
+//			System.out.println("Here in play with rook");
 			break;
 		case "n":
 			possibleMoves = playKnight(p, positions);
-			System.out.println("Here in play with knight");
+//			System.out.println("Here in play with knight");
 			break;
 		case "b":
 			possibleMoves = playBishop(p, positions);
-			System.out.println("Here in play with bishop");
+//			System.out.println("Here in play with bishop");
 			break;
 		case "q":
 			possibleMoves = playQueen(p, positions);
-			System.out.println("Here in play with queen");
+//			System.out.println("Here in play with queen");
 			break;
 		case "k":
 			possibleMoves = playKing(p, positions);
-			System.out.println("Here in play with king");
+//			System.out.println("Here in play with king");
 			break;
 		case "p":
 			possibleMoves = playPawn(p, positions);
-			System.out.println("Here in play with pawn");
+//			System.out.println("Here in play with pawn");
 			break;
 		default:
 			System.out.println("Selected none");
@@ -535,7 +546,20 @@ public class BoardFrame extends JFrame implements MouseListener{
 		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
 		positions[currX][currY].x = currX;
 		positions[currX][currY].y = currY;
+		
+		
 		positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
+		if(positions[currX][currY].name == "p") {
+			if(positions[currX][currY].color == 1) {
+				if(currX == 7) {
+					positions[currX][currY].promote = true;
+				}
+			} else {
+				if(currX == 0) {
+					positions[currX][currY].promote = true;
+				}
+			}
+		}
 		
 		positions[currX][currY].isSelected = false;
 		isPieceSelected = false;
@@ -664,11 +688,11 @@ public class BoardFrame extends JFrame implements MouseListener{
 				int oppTurn = this.turn == 1 ? 0 : 1;
 				if(isGettingChecked(this.turn, positions)) {
 					kingChecked[this.turn] = true;
-					System.out.printf("%d is checked right now\n", this.turn);
+//					System.out.printf("%d is checked right now\n", this.turn);
 					
 					// Go through every possible move of this.turn, and check if for any possible possible isGettingChecked fails
 					if(isGettingCheckmated(this.turn, positions)) {
-						System.out.println("Checkmate");
+//						System.out.println("Checkmate");
 						checkmate[this.turn] = true;
 					}
 					
