@@ -25,4 +25,17 @@ public class PiecePosition {
 		this.isSelected = isSelected;
 	}
 	
+	public PiecePosition(PiecePosition p) {
+		this.name = p.name;
+		this.color = p.color;
+		this.x = p.x;
+		this.y = p.y;
+		this.isFutureMove = p.isFutureMove;
+		this.isSelected = p.isSelected;
+	}
+	
+	public static PiecePosition newInstance(PiecePosition p) {
+		return new PiecePosition(p);
+	}
+	
 }

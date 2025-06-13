@@ -1,35 +1,19 @@
 package board;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.List;
-import java.awt.PopupMenu;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPopupMenu;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 
 import promotion.PopupMenuPromotion;
 import win.PanelPopup;
-import win.WinPanel;
 
 
 public class BoardFrame extends JFrame implements MouseListener{
@@ -40,6 +24,9 @@ public class BoardFrame extends JFrame implements MouseListener{
 	int playerOneColor;
 	int playerTwoColor;
 	public int turn = 0;
+	
+	public Move moves[] = new Move[2500];
+	public int currMove = 0;
 	
 	JDialog jd;
 	
@@ -118,11 +105,16 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	public void setBoard() throws IOException {
-//		printBoard(positions);
+//		System.out.printf("Curr Move Start Till: %d\n", currMove);
+//		for(int i = 0; i<currMove; i++) {
+//			System.out.printf("Previous move from:%s %d %d , to:%s %d %d, through:%s %d %d\n", moves[i].prevPosition.name, moves[i].prevPosition.x, moves[i].prevPosition.y, moves[i].currPosition.name, moves[i].currPosition.x, moves[i].currPosition.y, moves[i].gotRemoved.name, moves[i].gotRemoved.x, moves[i].gotRemoved.y);
+//		}
+//		System.out.println("End");
+		
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
 		
-		Boolean hasPromotion = false;
+//		Boolean hasPromotion = false;
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
@@ -130,11 +122,12 @@ public class BoardFrame extends JFrame implements MouseListener{
 				if(positions[i][j].name == "p" && positions[i][j].promote) {
 					
 					jd = new JDialog(this);
-					jd.setBounds(this.getX() + boardWidth/2 - 130, this.getY() + boardHeight/2 - 130, 300, 200);
+					jd.setBounds(this.getX() + boardWidth/2 - 130, this.getY() + boardHeight/2 - 130, 300, 150);
+					jd.setUndecorated(true);
 					promotionPosition[0] = i;
 					promotionPosition[1] = j;
 					PopupMenuPromotion pmp = new PopupMenuPromotion(this);
-					hasPromotion = true;
+//					hasPromotion = true;
 					isToBePromoted = true;
 					jd.add(pmp);
 					pmp.setVisible(true);
@@ -563,6 +556,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	private void changePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 		
+		System.out.println(selectedPosition[0]);
+		System.out.println(currX);
+		moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
+		currMove++;
 		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
 		positions[currX][currY].x = currX;
 		positions[currX][currY].y = currY;
@@ -712,7 +709,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 					
 					// Go through every possible move of this.turn, and check if for any possible possible isGettingChecked fails
 					if(isGettingCheckmated(this.turn, positions)) {
-//						System.out.println("Checkmate");
 						checkmate[this.turn] = true;
 					}
 					
