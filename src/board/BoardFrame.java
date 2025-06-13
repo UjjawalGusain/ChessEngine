@@ -40,12 +40,15 @@ public class BoardFrame extends JFrame implements MouseListener{
 	int playerTwoColor;
 	int turn = 0;
 	
+	public int[] promotionPosition = {-1, -1};
+	
 	Boolean[] checkmate = {false, false};
 	
 	int boardWidth = 720, boardHeight = 720;
-	Piece[][] board = new Piece[8][8];
-	PiecePosition[][] positions = new PiecePosition[8][8];
+	public Piece[][] board = new Piece[8][8];
+	public PiecePosition[][] positions = new PiecePosition[8][8];
 	JPanelWithBackground boardPanel;
+	Boolean promotionOccured = false;
 	public BoardFrame(String title, int playerOneColor, int playerTwoColor) throws IOException {
 		super(title);
 		this.setResizable(false);
@@ -110,21 +113,23 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	public void setBoard() throws IOException {
-		printBoard(positions);
+//		printBoard(positions);
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
-		
+		PopupMenuPromotion pmp = new PopupMenuPromotion(this);
+		Boolean hasPromotion = false;
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
 				board[i][j].addMouseListener(this);
 				if(positions[i][j].name == "p" && positions[i][j].promote) {
-					PopupMenuPromotion pmp = new PopupMenuPromotion();
+					promotionPosition[0] = i;
+					promotionPosition[1] = j;
 					pmp.show(this, 200, 300);
-					
-					
+					hasPromotion = true;
 				}
-				else if(positions[i][j].name == "k" && kingChecked[positions[i][j].color]) {
+				
+				if(positions[i][j].name == "k" && kingChecked[positions[i][j].color]) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.RED, 3));
 				} else if(positions[i][j].isSelected) {
 					board[i][j].setBorder(BorderFactory.createLineBorder(Color.BLUE, 3));
@@ -137,9 +142,15 @@ public class BoardFrame extends JFrame implements MouseListener{
 				boardPanel.add(board[i][j]);
 			}
 		}
+//		positions[i][j] = new PiecePosition(pmp.getPromotion(), positions[i][j].color, i, j);
+//		positions[i][j].promote = false;
+//		board[i][j] = new Piece(pmp.getPromotion(), positions[i][j].color, i, j);
 		
 		
         this.add(boardPanel);
+        if(hasPromotion) {	
+        	System.out.println(pmp.getPromotion());
+        }
         if(checkmate[this.turn]) {
         	String winMessage = this.turn == 0 ? "Congrats, black wins!" : "Congrats, white wins!"; 
         	

@@ -8,7 +8,7 @@ public class PiecePosition {
 	public Boolean isFutureMove = false;
 	public Boolean promote = false;
 	
-	PiecePosition(String name, int color, int x, int y) {
+	public PiecePosition(String name, int color, int x, int y) {
 		this.name = name;
 		this.color = color;
 		this.x = x;
@@ -16,7 +16,7 @@ public class PiecePosition {
 		this.promote = false;
 	}
 	
-	PiecePosition(String name, int color, int x, int y, Boolean isSelected, Boolean isFutureMove) {
+	public PiecePosition(String name, int color, int x, int y, Boolean isSelected, Boolean isFutureMove) {
 		this.name = name;
 		this.color = color;
 		this.x = x;
