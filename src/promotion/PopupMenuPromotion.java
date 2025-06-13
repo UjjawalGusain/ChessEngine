@@ -6,15 +6,15 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import board.BoardFrame;
 import board.PiecePosition;
 
 
-public class PopupMenuPromotion extends JPopupMenu implements MouseListener {
+public class PopupMenuPromotion extends JPanel implements MouseListener {
 	private static final long serialVersionUID = 1L;
 	public String promote = "null";
 	public BoardFrame board;
@@ -27,6 +27,7 @@ public class PopupMenuPromotion extends JPopupMenu implements MouseListener {
 	}
 	
 	public PopupMenuPromotion(BoardFrame board) {
+//		setBounds(200, 300, 400, 600);
 		this.board = board;
 		Font fo = new Font("DIALOG", Font.ITALIC, 30);
 		JLabel label = new JLabel("Promote pawn to: ");
@@ -34,18 +35,18 @@ public class PopupMenuPromotion extends JPopupMenu implements MouseListener {
 		
 		this.add(label);
 		
-		JMenuItem m1 = new JMenuItem("Queen");
-        JMenuItem m2 = new JMenuItem("Rook");
-        JMenuItem m3 = new JMenuItem("Bishop");
-        JMenuItem m4 = new JMenuItem("Knight");
-        
+		JButton m1 = new JButton("Queen");
+        JButton m2 = new JButton("Rook");
+        JButton m3 = new JButton("Bishop");
+        JButton m4 = new JButton("Knight");
         this.setBorder(new EmptyBorder(10, 50, 10, 50));
-        
         m1.addMouseListener(this);
         m2.addMouseListener(this);
         m3.addMouseListener(this);
         m4.addMouseListener(this);
         
+        
+
         this.add(m1);
         this.add(m2);
         this.add(m3);
@@ -57,7 +58,7 @@ public class PopupMenuPromotion extends JPopupMenu implements MouseListener {
 		int y = board.promotionPosition[1];
 		
 		
-		JMenuItem item = (JMenuItem) e.getComponent();
+		JButton item = (JButton) e.getComponent();
 		
 		if(item.getText() == "Queen") {
 			setPromotion("q");
@@ -69,6 +70,7 @@ public class PopupMenuPromotion extends JPopupMenu implements MouseListener {
 			setPromotion("n");
 		}
 		board.positions[x][y] = new PiecePosition(getPromotion(), board.positions[x][y].color, x, y);
+		board.isToBePromoted = false;
 		if(board.isGettingCheckmated(board.turn, board.positions)) {
 			board.checkmate[board.turn] = true;
 		}

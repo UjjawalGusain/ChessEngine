@@ -18,6 +18,7 @@ import java.util.Arrays;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
@@ -40,6 +41,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 	int playerTwoColor;
 	public int turn = 0;
 	
+	JDialog jd;
+	
 	public int[] promotionPosition = {-1, -1};
 	
 	public Boolean[] checkmate = {false, false};
@@ -49,6 +52,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	public PiecePosition[][] positions = new PiecePosition[8][8];
 	JPanelWithBackground boardPanel;
 	Boolean promotionOccured = false;
+	public Boolean isToBePromoted = false;
 	public BoardFrame(String title, int playerOneColor, int playerTwoColor) throws IOException {
 		super(title);
 		this.setResizable(false);
@@ -117,17 +121,24 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		printBoard(positions);
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
-		PopupMenuPromotion pmp = new PopupMenuPromotion(this);
+		
 		Boolean hasPromotion = false;
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
 				board[i][j].addMouseListener(this);
 				if(positions[i][j].name == "p" && positions[i][j].promote) {
+					
+					jd = new JDialog(this);
+					jd.setBounds(this.getX() + boardWidth/2 - 130, this.getY() + boardHeight/2 - 130, 300, 200);
 					promotionPosition[0] = i;
 					promotionPosition[1] = j;
-					pmp.show(this, 200, 300);
+					PopupMenuPromotion pmp = new PopupMenuPromotion(this);
 					hasPromotion = true;
+					isToBePromoted = true;
+					jd.add(pmp);
+					pmp.setVisible(true);
+					jd.setVisible(true);
 				}
 				
 				if(positions[i][j].name == "k" && kingChecked[positions[i][j].color]) {
@@ -143,10 +154,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 				boardPanel.add(board[i][j]);
 			}
 		}
-//		positions[i][j] = new PiecePosition(pmp.getPromotion(), positions[i][j].color, i, j);
-//		positions[i][j].promote = false;
-//		board[i][j] = new Piece(pmp.getPromotion(), positions[i][j].color, i, j);
-		
+
+		if(!isToBePromoted && jd != null) {
+			jd.setVisible(false);
+		}
 		
         this.add(boardPanel);
         if(checkmate[this.turn]) {
@@ -646,7 +657,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 				moves = this.playPawn(p, positions);
 				break;
 			default:
-				System.out.println("Error in checkCheckmateForPiece");
 				break;
 			}
 			
@@ -677,6 +687,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		if(isToBePromoted) return;
 		Piece piece = (Piece)e.getComponent();
 		int i = piece.x, j = piece.y;
 		
