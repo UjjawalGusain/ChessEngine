@@ -69,6 +69,9 @@ public class PopupMenuPromotion extends JPopupMenu implements MouseListener {
 			setPromotion("n");
 		}
 		board.positions[x][y] = new PiecePosition(getPromotion(), board.positions[x][y].color, x, y);
+		if(board.isGettingCheckmated(board.turn, board.positions)) {
+			board.checkmate[board.turn] = true;
+		}
 		try {
 			board.setBoard();
 		} catch (IOException e1) {

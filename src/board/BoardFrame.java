@@ -38,11 +38,11 @@ public class BoardFrame extends JFrame implements MouseListener{
 	Boolean[] kingChecked = {false, false};
 	int playerOneColor;
 	int playerTwoColor;
-	int turn = 0;
+	public int turn = 0;
 	
 	public int[] promotionPosition = {-1, -1};
 	
-	Boolean[] checkmate = {false, false};
+	public Boolean[] checkmate = {false, false};
 	
 	int boardWidth = 720, boardHeight = 720;
 	public Piece[][] board = new Piece[8][8];
@@ -110,6 +110,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.positions[0][2] = new PiecePosition("none", -1, 0, 2);
 		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
 		this.positions[7][2] = new PiecePosition("none", 1, 7, 2);
+		this.positions[0][3] = new PiecePosition("none", 1, 0, 3);
 	}
 	
 	public void setBoard() throws IOException {
@@ -148,9 +149,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		
         this.add(boardPanel);
-        if(hasPromotion) {	
-        	System.out.println(pmp.getPromotion());
-        }
         if(checkmate[this.turn]) {
         	String winMessage = this.turn == 0 ? "Congrats, black wins!" : "Congrats, white wins!"; 
         	
@@ -664,7 +662,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return count;
 	}
 	
-	private Boolean isGettingCheckmated(int turn, PiecePosition[][] positions) {
+	public Boolean isGettingCheckmated(int turn, PiecePosition[][] positions) {
 		
 		int count = 0;
 		for(int i = 0; i<8; i++) {
