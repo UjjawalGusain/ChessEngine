@@ -24,6 +24,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 	int playerOneColor;
 	int playerTwoColor;
 	public int turn = 0;
+	public Boolean[] queenSideKingRookMoved = {false, false};
+	public Boolean[] kingSideKingRookMoved = {false, false};
 	
 	public Move moves[] = new Move[2500];
 	public int currMove = 0;
@@ -89,6 +91,22 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.positions[7][7] = new PiecePosition("r", 0, 7, 7);
 		
 		
+		
+		
+//		this.positions[1][0] = new PiecePosition("none", -1, 1, 0);
+//		this.positions[4][0] = new PiecePosition("r", 0, 4, 0);
+//		this.positions[0][1] = new PiecePosition("none", -1, 0, 1);
+//		this.positions[0][2] = new PiecePosition("none", -1, 0, 2);
+//		this.positions[0][3] = new PiecePosition("none", -1, 0, 3);
+//		this.positions[0][5] = new PiecePosition("none", -1, 0, 5);
+//		this.positions[0][6] = new PiecePosition("none", -1, 0, 6);
+//		
+//		this.positions[7][1] = new PiecePosition("none", -1, 7, 1);
+//		this.positions[7][2] = new PiecePosition("none", -1, 7, 2);
+//		this.positions[7][3] = new PiecePosition("none", -1, 7, 3);
+//		this.positions[7][5] = new PiecePosition("none", -1, 7, 5);
+//		this.positions[7][6] = new PiecePosition("none", -1, 7, 6);
+//		
 //		this.positions[4][2] = new PiecePosition("b", 0, 4, 2);
 //		this.positions[5][5] = new PiecePosition("q", 0, 5, 5);
 //		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
@@ -341,8 +359,32 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
-	int[][] playKing(PiecePosition piece, PiecePosition[][] positions) {
+	int[][] playKing(PiecePosition piece, PiecePosition[][] positions, Boolean canBeCastled) {
 		ArrayList<int[]> moves = new ArrayList<>();
+		if(canBeCastled) {
+			Boolean canBeKingSideCastled = true;
+			canBeKingSideCastled = !kingSideKingRookMoved[piece.color];
+			canBeKingSideCastled = canBeKingSideCastled && positions[piece.x][piece.y + 3].name == "r" && positions[piece.x][piece.y + 3].color == piece.color;
+			for(int i = 0; i<4; i++) {
+				canBeKingSideCastled = canBeKingSideCastled && !isPositionGettingAttacked(piece.color, positions, piece.x, piece.y + i);
+			}
+			if(canBeKingSideCastled) {
+				int[] move = {piece.x, piece.y + 2};
+				moves.add(move);
+			}
+			
+			Boolean canBeQueenSideCastled = true;
+			canBeQueenSideCastled = !queenSideKingRookMoved[piece.color];
+			canBeQueenSideCastled = canBeQueenSideCastled && positions[piece.x][piece.y - 4].name == "r" && positions[piece.x][piece.y - 4].color == piece.color;
+			for(int i = 0; i<5; i++) {
+				canBeQueenSideCastled = canBeQueenSideCastled && !isPositionGettingAttacked(piece.color, positions, piece.x, piece.y - i);
+			}
+			
+			if(canBeQueenSideCastled) {
+				int[] move = {piece.x, piece.y - 2};
+				moves.add(move);
+			}
+		}
 		
 		int[] delRow = {-1, 1, 0};
 		int[] delCol = {-1, 1, 0};
@@ -500,7 +542,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 						possibleAttacks.add(playQueen(p, positions));
 						break;
 					case "k":
-						possibleAttacks.add(playKing(p, positions));
+						possibleAttacks.add(playKing(p, positions, false));
 						break;
 					case "p":
 						possibleAttacks.add(playPawn(p, positions));
@@ -516,6 +558,49 @@ public class BoardFrame extends JFrame implements MouseListener{
 			for(int[] attack : attacks) {
 				int x = attack[0], y = attack[1];
 				if(x == enemyKingX && y == enemyKingY) return true;
+			}
+		}
+		return false;
+	}
+	
+	private Boolean isPositionGettingAttacked(int color, PiecePosition[][] positions, int x, int y) {
+		
+		ArrayList<int[][]> possibleAttacks = new ArrayList<>();
+				
+		for(int i = 0; i<8; i++) {
+			for(int j = 0; j<8; j++) {
+				PiecePosition p = positions[i][j];
+
+				if(p.color != color) {
+					switch(p.name) {
+					case "r":
+						possibleAttacks.add(playRook(p, positions));
+						break;
+					case "b":
+						possibleAttacks.add(playBishop(p, positions));
+						break;
+					case "n":
+						possibleAttacks.add(playKnight(p, positions));
+						break;
+					case "q":
+						possibleAttacks.add(playQueen(p, positions));
+						break;
+					case "k":
+						possibleAttacks.add(playKing(p, positions, false));
+						break;
+					case "p":
+						possibleAttacks.add(playPawn(p, positions));
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+		for(int[][] attacks : possibleAttacks) {
+			for(int[] attack : attacks) {
+				if(attack[0] == x && attack[1] == y) 
+					return true;
 			}
 		}
 		return false;
@@ -567,7 +652,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 //			System.out.println("Here in play with queen");
 			break;
 		case "k":
-			possibleMoves = playKing(p, positions);
+			possibleMoves = playKing(p, positions, true);
 //			System.out.println("Here in play with king");
 			break;
 		case "p":
@@ -597,17 +682,61 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	private void changePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
+				
+		if(positions[selectedPosition[0]][selectedPosition[1]].name == "r" && (positions[selectedPosition[0]][selectedPosition[1]].x == 7 || positions[selectedPosition[0]][selectedPosition[1]].x == 0)) { 
+			
+			if(positions[selectedPosition[0]][selectedPosition[1]].y == 7) {
+				this.kingSideKingRookMoved[positions[selectedPosition[0]][selectedPosition[1]].color] = true;
+//				System.out.println("kingSideKingRookMoved");
+			} else if(positions[selectedPosition[0]][selectedPosition[1]].y == 0) {
+				this.queenSideKingRookMoved[positions[selectedPosition[0]][selectedPosition[1]].color] = true;
+//				System.out.println("queenSideKingRookMoved");
+			}
+			
+		} 
+		else if(positions[selectedPosition[0]][selectedPosition[1]].name == "k") {
+			this.kingSideKingRookMoved[positions[selectedPosition[0]][selectedPosition[1]].color] = true;
+			this.queenSideKingRookMoved[positions[selectedPosition[0]][selectedPosition[1]].color] = true;
+//			System.out.printf("king moved color: %d", positions[selectedPosition[0]][selectedPosition[1]].color);
+		}
 		
-//		System.out.println(selectedPosition[0]);
-//		System.out.println(currX);
+		// is being castled
+		Boolean castled = false;
+		if(positions[selectedPosition[0]][selectedPosition[1]].name == "k") {
+			if(Math.abs(currY - selectedPosition[1]) == 2) {
+				castled = true;
+				if(currY - selectedPosition[1] == 2) {
+					positions[selectedPosition[0]][selectedPosition[1] + 2] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
+					positions[selectedPosition[0]][5] = new PiecePosition(positions[selectedPosition[0]][7]);
+					positions[selectedPosition[0]][5].y = 5;
+					positions[selectedPosition[0]][selectedPosition[1] + 2].y = currY;
+					
+					
+					positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, selectedPosition[0], selectedPosition[1]);
+					positions[selectedPosition[0]][7] = new PiecePosition("none", -1, selectedPosition[0], 7);
+					positions[selectedPosition[0]][4] = new PiecePosition("none", -1, selectedPosition[0], 4);
+		
+					
+				} else if(selectedPosition[1] - currY == 2) {
+					positions[selectedPosition[0]][selectedPosition[1] - 2] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
+					positions[selectedPosition[0]][3] = new PiecePosition(positions[selectedPosition[0]][0]);
+					positions[selectedPosition[0]][3].y = 3;
+					positions[selectedPosition[0]][selectedPosition[1] - 2].y = selectedPosition[1] - 2;
+					positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, selectedPosition[0], selectedPosition[1]);
+					
+					positions[selectedPosition[0]][0] = new PiecePosition("none", -1, selectedPosition[0], 0);
+					positions[selectedPosition[0]][4] = new PiecePosition("none", -1, selectedPosition[0], 4);
+				}
+				
+			}
+		}
+		
 		moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
 		currMove++;
 		
+		
 		// en passant case
 		if(positions[selectedPosition[0]][selectedPosition[1]].name == "p" && positions[selectedPosition[0]][selectedPosition[1]].y != currY && positions[currX][currY].name == "none") {
-//			System.out.println("Enter function");
-//			System.out.printf("sx: %d, sy: %d", selectedPosition[0], selectedPosition[1]);
-//			System.out.printf("currX: %d, currY: %d", currX, currY);
 			positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
 			positions[currX][currY].x = currX;
 			positions[currX][currY].y = currY;
@@ -620,7 +749,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 			}
 			positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, selectedPosition[0], selectedPosition[1]);
 			
-		} else {
+		} else if(!castled){
 			positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
 			positions[currX][currY].x = currX;
 			positions[currX][currY].y = currY;
@@ -712,7 +841,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 				moves = this.playQueen(p, positions);
 				break;
 			case "k":
-				moves = this.playKing(p, positions);
+				moves = this.playKing(p, positions, true);
 				break;
 			case "p":
 				moves = this.playPawn(p, positions);
