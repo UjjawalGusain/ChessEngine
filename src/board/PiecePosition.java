@@ -7,6 +7,12 @@ public class PiecePosition {
 	public int x, y;
 	public Boolean isFutureMove = false;
 	public Boolean promote = false;
+	public int[] enPassant = {-1, -1};
+	
+	public void setEnpassant(int x, int y) {
+		this.enPassant[0] = x;
+		this.enPassant[1] = y;
+	}
 	
 	public PiecePosition(String name, int color, int x, int y) {
 		this.name = name;

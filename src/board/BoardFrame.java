@@ -97,19 +97,17 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
 //		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
-		this.positions[1][2] = new PiecePosition("p", 0, 1, 2);
-		this.positions[0][2] = new PiecePosition("none", -1, 0, 2);
-		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
-		this.positions[7][2] = new PiecePosition("none", 1, 7, 2);
-		this.positions[0][3] = new PiecePosition("none", 1, 0, 3);
+//		this.positions[1][2] = new PiecePosition("p", 0, 1, 2);
+//		this.positions[0][2] = new PiecePosition("none", -1, 0, 2);
+//		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
+//		this.positions[7][2] = new PiecePosition("none", 1, 7, 2);
+//		this.positions[0][3] = new PiecePosition("none", 1, 0, 3);
 	}
 	
 	public void setBoard() throws IOException {
-//		System.out.printf("Curr Move Start Till: %d\n", currMove);
-//		for(int i = 0; i<currMove; i++) {
-//			System.out.printf("Previous move from:%s %d %d , to:%s %d %d, through:%s %d %d\n", moves[i].prevPosition.name, moves[i].prevPosition.x, moves[i].prevPosition.y, moves[i].currPosition.name, moves[i].currPosition.x, moves[i].currPosition.y, moves[i].gotRemoved.name, moves[i].gotRemoved.x, moves[i].gotRemoved.y);
-//		}
-//		System.out.println("End");
+		
+		if(currMove > 0)
+			System.out.printf("Last move => x: %d, y: %d\n", moves[currMove-1].currPosition.x, moves[currMove-1].currPosition.y);
 		
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
@@ -377,6 +375,28 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		// if black
 		if(piece.color == 1) {
+			
+			// en passant
+			if(piece.x == 4 && currMove > 0) {
+				int leftY = piece.y - 1, rightY = piece.y + 1;
+				if(leftY >= 0 && this.moves[currMove - 1].currPosition.x == piece.x && this.moves[currMove - 1].currPosition.y == leftY && this.moves[currMove - 1].currPosition.color != this.turn && this.moves[currMove - 1].currPosition.name == "p") {
+					if(this.moves[currMove-1].prevPosition.x == piece.x + 2 && this.moves[currMove-1].prevPosition.y == leftY) {
+						int[] move = {piece.x + 1, leftY};
+						moves.add(move);
+					}
+				}
+				
+				if(rightY < 8 && this.moves[currMove - 1].currPosition.x == piece.x && this.moves[currMove - 1].currPosition.y == rightY && this.moves[currMove - 1].currPosition.color != this.turn && this.moves[currMove - 1].currPosition.name == "p") {
+					
+					if(this.moves[currMove-1].prevPosition.x == piece.x + 2 && this.moves[currMove-1].prevPosition.y == rightY) {
+						int[] move = {piece.x + 1, rightY};
+						moves.add(move);
+					}
+					
+				}
+				
+			}
+			
 			if(piece.x == 1 && positions[piece.x+1][piece.y].name == "none" && positions[piece.x+2][piece.y].name == "none") {
 				int[] move = {piece.x + 2, piece.y};
 				moves.add(move);
@@ -398,6 +418,28 @@ public class BoardFrame extends JFrame implements MouseListener{
 			}
 			
 		} else if(piece.color == 0) { // white
+			
+			// en passant
+			if(piece.x == 3 && currMove > 0) {
+				int leftY = piece.y - 1, rightY = piece.y + 1;
+				if(leftY >= 0 && this.moves[currMove - 1].currPosition.x == piece.x && this.moves[currMove - 1].currPosition.y == leftY && this.moves[currMove - 1].currPosition.color != this.turn ) {
+					if(this.moves[currMove-1].prevPosition.x == piece.x - 2 && this.moves[currMove-1].prevPosition.y == leftY) {
+						int[] move = {piece.x - 1, leftY};
+						moves.add(move);
+					}
+				}
+				
+				if(rightY < 8 && this.moves[currMove - 1].currPosition.x == piece.x && this.moves[currMove - 1].currPosition.y == rightY && this.moves[currMove - 1].currPosition.color != this.turn ) {
+					
+					if(this.moves[currMove-1].prevPosition.x == piece.x - 2 && this.moves[currMove-1].prevPosition.y == rightY) {
+						int[] move = {piece.x - 1, rightY};
+						moves.add(move);
+					}
+					
+				}
+				
+			}
+			
 			if(piece.x == 6 && positions[piece.x-1][piece.y].name == "none" && positions[piece.x-2][piece.y].name == "none") {
 				int[] move = {piece.x - 2, piece.y};
 				moves.add(move);
@@ -556,16 +598,36 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	private void changePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 		
-		System.out.println(selectedPosition[0]);
-		System.out.println(currX);
+//		System.out.println(selectedPosition[0]);
+//		System.out.println(currX);
 		moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
 		currMove++;
-		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
-		positions[currX][currY].x = currX;
-		positions[currX][currY].y = currY;
 		
+		// en passant case
+		if(positions[selectedPosition[0]][selectedPosition[1]].name == "p" && positions[selectedPosition[0]][selectedPosition[1]].y != currY && positions[currX][currY].name == "none") {
+//			System.out.println("Enter function");
+//			System.out.printf("sx: %d, sy: %d", selectedPosition[0], selectedPosition[1]);
+//			System.out.printf("currX: %d, currY: %d", currX, currY);
+			positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
+			positions[currX][currY].x = currX;
+			positions[currX][currY].y = currY;
+			
+			
+			if(positions[currX][currY].color == 0) {
+				positions[currX+1][currY] = new PiecePosition("none", -1, currX+1, currY);
+			} else {
+				positions[currX-1][currY] = new PiecePosition("none", -1, currX-1, currY);
+			}
+			positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, selectedPosition[0], selectedPosition[1]);
+			
+		} else {
+			positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
+			positions[currX][currY].x = currX;
+			positions[currX][currY].y = currY;
+			
+			positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
+		}
 		
-		positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, currX, currY);
 		if(positions[currX][currY].name == "p") {
 			if(positions[currX][currY].color == 1) {
 				if(currX == 7) {
@@ -577,6 +639,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 				}
 			}
 		}
+		
+		
 		
 		positions[currX][currY].isSelected = false;
 		isPieceSelected = false;
