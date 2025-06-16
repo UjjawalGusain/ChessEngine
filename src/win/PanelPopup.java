@@ -13,7 +13,7 @@ public class PanelPopup extends JPanel {
 	public PanelPopup(String message) {
 		
 		Font fo = new Font("DIALOG", Font.ITALIC, 30);
-		JLabel label = new JLabel(message);
+		JLabel label = new JLabel("<html>"+message+"</html>");
 		label.setFont(fo);
 		this.add(label);
 		this.setBorder(new EmptyBorder(10, 50, 10, 50));
