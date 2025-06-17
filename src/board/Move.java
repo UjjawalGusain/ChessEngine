@@ -5,7 +5,7 @@ public class Move {
 	public PiecePosition prevPosition, currPosition;
 	public PiecePosition gotRemoved;
 	
-	public PiecePosition prevPositionLeft, prevPositionRight, currPositionLeft, currPositionRight;
+	public PiecePosition prevPositionKing, prevPositionRook, currPositionKing, currPositionRook;
 	
 	public Move(PiecePosition prevPosition, PiecePosition currPosition, PiecePosition gotRemoved) {
 		this.prevPosition = prevPosition;
@@ -13,13 +13,13 @@ public class Move {
 		this.gotRemoved = gotRemoved;
 	}
 	
-	public Move(Boolean isCastleMove, PiecePosition prevPositionLeft, PiecePosition prevPositionRight, PiecePosition currPositionLeft, PiecePosition currPositionRight) {
+	public Move(Boolean isCastleMove, PiecePosition prevPositionKing, PiecePosition prevPositionRook, PiecePosition currPositionKing, PiecePosition currPositionRook) {
 		
 		this.castleMove = isCastleMove;
-		this.prevPositionLeft = prevPositionLeft;
-		this.prevPositionRight = prevPositionRight;
-		this.currPositionLeft = currPositionLeft;
-		this.currPositionRight = currPositionRight;
+		this.prevPositionKing = prevPositionKing;
+		this.prevPositionRook = prevPositionRook;
+		this.currPositionKing = currPositionKing;
+		this.currPositionRook = currPositionRook;
 	}
 	
 }

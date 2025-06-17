@@ -141,7 +141,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	public void setBoard() throws IOException {
-//		if(currMove > 0) System.out.println(this.moves[currMove - 1].currPosition.name);
+		printLastMove();
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
 		
@@ -207,6 +207,36 @@ public class BoardFrame extends JFrame implements MouseListener{
         this.repaint();
         
     }
+	
+	void printLastMove() {
+//		public Move moves[] = new Move[2500];
+//		public int currMove = 0;
+		
+		int moveIndex = currMove - 1;
+		if(moveIndex < 0) return;
+		
+		if(moves[moveIndex].castleMove == false) {
+			System.out.printf("%s goes from %d,%d to %d,%d capturing %s\n", moves[moveIndex].prevPosition.name, moves[moveIndex].prevPosition.x, moves[moveIndex].prevPosition.y
+					, moves[moveIndex].currPosition.x, moves[moveIndex].currPosition.y, moves[moveIndex].currPosition.name);
+			return;
+		}
+		
+		System.out.printf("Castling %s from %d,%d with %s from %d,%d to %s[%d][%d] and %s[%d][%d]\n",
+				this.moves[moveIndex].prevPositionKing.name,
+				this.moves[moveIndex].prevPositionKing.x,
+				this.moves[moveIndex].prevPositionKing.y,
+				this.moves[moveIndex].prevPositionRook.name,
+				this.moves[moveIndex].prevPositionRook.x,
+				this.moves[moveIndex].prevPositionRook.y,
+				this.moves[moveIndex].currPositionKing.name,
+				this.moves[moveIndex].currPositionKing.x,
+				this.moves[moveIndex].currPositionKing.y,
+				this.moves[moveIndex].currPositionRook.name,
+				this.moves[moveIndex].currPositionRook.x,
+				this.moves[moveIndex].currPositionRook.y
+				);
+		
+	}
 	
 	int[][] playRook(PiecePosition piece, PiecePosition[][] positions) {
 		ArrayList<int[]> moves = new ArrayList<>();
@@ -730,11 +760,12 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 		
 		// is being castled
-		Boolean castled = false;
+		Boolean castled = false, left = false, right = false;
 		if(positions[selectedPosition[0]][selectedPosition[1]].name == "k") {
 			if(Math.abs(currY - selectedPosition[1]) == 2) {
 				castled = true;
 				if(currY - selectedPosition[1] == 2) {
+					right = true;
 					positions[selectedPosition[0]][selectedPosition[1] + 2] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
 					positions[selectedPosition[0]][5] = new PiecePosition(positions[selectedPosition[0]][7]);
 					positions[selectedPosition[0]][5].y = 5;
@@ -747,6 +778,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 					
 				} else if(selectedPosition[1] - currY == 2) {
+					left = true;
 					positions[selectedPosition[0]][selectedPosition[1] - 2] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
 					positions[selectedPosition[0]][3] = new PiecePosition(positions[selectedPosition[0]][0]);
 					positions[selectedPosition[0]][3].y = 3;
@@ -765,10 +797,23 @@ public class BoardFrame extends JFrame implements MouseListener{
 		if(!castled) {
 			moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
 		} else {
-			
+			if(right) {
+				moves[currMove] = new Move(true, 
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 3]),
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 2]),
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 1]));
+				
+			} else {
+				moves[currMove] = new Move(true, 
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 4]),
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 2]),
+						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 1]));
+			}
+			moves[currMove].prevPositionKing.name = "k";
+			moves[currMove].prevPositionRook.name = "r";
 		}
-		
-//		System.out.println(moves[currMove].currPosition.color);
 		currMove++;
 		
 		
