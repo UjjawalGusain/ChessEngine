@@ -762,7 +762,12 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 //		System.out.println("We are reaching here");
 //		printBoard(positions);
-		moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
+		if(!castled) {
+			moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
+		} else {
+			
+		}
+		
 //		System.out.println(moves[currMove].currPosition.color);
 		currMove++;
 		
