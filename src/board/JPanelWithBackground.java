@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 public class JPanelWithBackground extends JPanel {
-
+  private static final long serialVersionUID = 1L;
   private Image backgroundImage;
 
   public JPanelWithBackground(String fileName, int width, int height) throws IOException {
