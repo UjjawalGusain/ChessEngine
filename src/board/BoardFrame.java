@@ -152,8 +152,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	public void setBoard() throws IOException {
-		printLastMove();
-		printBoardWithPositions(positions);
+//		printLastMove();
+//		printBoardWithPositions(positions);
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
 //		Boolean hasPromotion = false;
@@ -225,7 +225,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		if(moves[moveIndex].castleMove == false) {
 			System.out.printf("%s goes from %d,%d to %d,%d capturing %s\n", moves[moveIndex].prevPosition.name, moves[moveIndex].prevPosition.x, moves[moveIndex].prevPosition.y
-					, moves[moveIndex].currPosition.x, moves[moveIndex].currPosition.y, moves[moveIndex].currPosition.name);
+					, moves[moveIndex].currPosition.x, moves[moveIndex].currPosition.y, moves[moveIndex].gotRemoved.name);
 			return;
 		}
 		
@@ -761,22 +761,21 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	private void undoMove() {
 		if(currMove == 0) return;
-		
-		
+		System.out.println("Here: ");
+		printLastMove();
 		
 		currMove--;
 		Move currentMove = moves[currMove];
 		
-		
 		if(currentMove.castleMove) {
-			int x1 = positions[currentMove.prevPositionKing.x][currentMove.prevPositionKing.y].x;
-			int y1 = positions[currentMove.prevPositionKing.x][currentMove.prevPositionKing.y].y;
+			int x1 = currentMove.prevPositionKing.x;
+			int y1 = currentMove.prevPositionKing.y;
 			
-			int x2 = positions[currentMove.prevPositionRook.x][currentMove.prevPositionRook.y].x;
-			int y2 = positions[currentMove.prevPositionRook.x][currentMove.prevPositionRook.y].y;
+			int x2 = currentMove.prevPositionRook.x;
+			int y2 = currentMove.prevPositionRook.y;
 			
-			positions[currentMove.prevPositionKing.x][currentMove.prevPositionKing.y] = new PiecePosition(positions[currentMove.currPositionKing.x][currentMove.currPositionKing.y]);
-			positions[currentMove.prevPositionRook.x][currentMove.prevPositionRook.y] = new PiecePosition(positions[currentMove.currPositionRook.x][currentMove.currPositionRook.y]);
+			positions[x1][y1] = new PiecePosition(positions[currentMove.currPositionKing.x][currentMove.currPositionKing.y]);
+			positions[x2][y2] = new PiecePosition(positions[currentMove.currPositionRook.x][currentMove.currPositionRook.y]);
 			
 			positions[currentMove.prevPositionKing.x][currentMove.prevPositionKing.y].x = x1;
 			positions[currentMove.prevPositionKing.x][currentMove.prevPositionKing.y].y = y1;
@@ -784,10 +783,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 			positions[currentMove.prevPositionRook.x][currentMove.prevPositionRook.y].x = x2;
 			positions[currentMove.prevPositionRook.x][currentMove.prevPositionRook.y].y = y2;
 			
-			if(currMove == kingSideKingRookMoved[currentMove.currPositionKing.color]) {
-				kingSideKingRookMoved[currentMove.currPositionKing.color] = -1;
-			} else if(currMove == queenSideKingRookMoved[currentMove.currPositionKing.color]) {
-				queenSideKingRookMoved[currentMove.currPositionKing.color] = -1;
+			if(currMove == kingSideKingRookMoved[currentMove.prevPositionKing.color]) {
+				kingSideKingRookMoved[currentMove.prevPositionKing.color] = -1;
+			} else if(currMove == queenSideKingRookMoved[currentMove.prevPositionKing.color]) {
+				queenSideKingRookMoved[currentMove.prevPositionKing.color] = -1;
 			}
 			
 			positions[currentMove.currPositionKing.x][currentMove.currPositionKing.y] = new PiecePosition("none", -1, currentMove.currPositionKing.x, currentMove.currPositionKing.y);
@@ -800,41 +799,27 @@ public class BoardFrame extends JFrame implements MouseListener{
 			int x2 = positions[currentMove.currPosition.x][currentMove.currPosition.y].x;
 			int y2 = positions[currentMove.currPosition.x][currentMove.currPosition.y].y;
 			
+			
 			int x3 = positions[currentMove.gotRemoved.x][currentMove.gotRemoved.y].x;
 			int y3 = positions[currentMove.gotRemoved.x][currentMove.gotRemoved.y].y;
 			
-			String name = positions[currentMove.gotRemoved.x][currentMove.gotRemoved.y].name;
-			int color = positions[currentMove.gotRemoved.x][currentMove.gotRemoved.y].color;
-			
-//			if(x2 != x3) {
-//				// en passant case 
-//				positions[currentMove.prevPosition.x][currentMove.prevPosition.y] = new PiecePosition(positions[currentMove.currPosition.x][currentMove.currPosition.y]);
-//				positions[currentMove.prevPosition.x][currentMove.prevPosition.y].x = x1;
-//				positions[currentMove.prevPosition.x][currentMove.prevPosition.y].y = y1;
-//				
-//				if(x3 > x2) {
-//					positions[x3][y3] = new PiecePosition("p", 1, x3, y3);
-//				} else {
-//					positions[x3][y3] = new PiecePosition("p", 0, x3, y3);
-//				}
-//			}
-//			
-//			positions[currentMove.prevPosition.x][currentMove.prevPosition.y] = new PiecePosition(positions[currentMove.currPosition.x][currentMove.currPosition.y]);
-//			positions[currentMove.prevPosition.x][currentMove.prevPosition.y].x = x1;
-//			positions[currentMove.prevPosition.x][currentMove.prevPosition.y].y = y1;
+			String name = currentMove.gotRemoved.name;
+			int color = currentMove.gotRemoved.color;
 			
 			positions[currentMove.prevPosition.x][currentMove.prevPosition.y] = new PiecePosition(positions[currentMove.currPosition.x][currentMove.currPosition.y]);
 			positions[currentMove.prevPosition.x][currentMove.prevPosition.y].x = x1;
 			positions[currentMove.prevPosition.x][currentMove.prevPosition.y].y = y1;
 			
 			if(x3 > x2) {
-				System.out.println("Here1");
+//				System.out.println("Here1");
 				positions[x3][y3] = new PiecePosition("p", 1, x3, y3);
 			} else if(x3 < x2) {
-				System.out.println("Here2");
+//				System.out.println("Here2");
 				positions[x3][y3] = new PiecePosition("p", 0, x3, y3);
 			} else {
-				System.out.println("Here3");
+//				System.out.println("Here3");
+//				System.out.println("name: " + name);
+				System.out.printf("currentMove.currPosition.x: %d, currentMove.currPosition.y: %d\n", currentMove.currPosition.x, currentMove.currPosition.y);
 				positions[currentMove.currPosition.x][currentMove.currPosition.y] = new PiecePosition(name, color, x3, y3);
 			}
 			
@@ -888,6 +873,11 @@ public class BoardFrame extends JFrame implements MouseListener{
 				castled = true;
 				if(currY - selectedPosition[1] == 2) {
 					right = true;
+					moves[currMove] = new Move(true, 
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 3]),
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 2]),
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 1]));
 					positions[selectedPosition[0]][selectedPosition[1] + 2] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
 					positions[selectedPosition[0]][5] = new PiecePosition(positions[selectedPosition[0]][7]);
 					positions[selectedPosition[0]][5].y = 5;
@@ -901,6 +891,11 @@ public class BoardFrame extends JFrame implements MouseListener{
 					
 				} else if(selectedPosition[1] - currY == 2) {
 					left = true;
+					moves[currMove] = new Move(true, 
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 4]),
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 2]),
+							new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 1]));
 					positions[selectedPosition[0]][selectedPosition[1] - 2] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
 					positions[selectedPosition[0]][3] = new PiecePosition(positions[selectedPosition[0]][0]);
 					positions[selectedPosition[0]][3].y = 3;
@@ -910,7 +905,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 					positions[selectedPosition[0]][0] = new PiecePosition("none", -1, selectedPosition[0], 0);
 					positions[selectedPosition[0]][4] = new PiecePosition("none", -1, selectedPosition[0], 4);
 				}
-				
+				moves[currMove].prevPositionKing.name = "k";
+				moves[currMove].prevPositionRook.name = "r";
 			}
 		}
 		
@@ -919,6 +915,14 @@ public class BoardFrame extends JFrame implements MouseListener{
 		Boolean isEnPassant = false;
 		if(positions[selectedPosition[0]][selectedPosition[1]].name == "p" && positions[selectedPosition[0]][selectedPosition[1]].y != currY && positions[currX][currY].name == "none") {
 			isEnPassant = true;
+			
+			if(turn == 0) {
+				moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX+1][currY]));
+			} else {
+				moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX-1][currY]));
+			}
+			moves[currMove].prevPosition.name = "p";
+			
 			positions[currX][currY] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
 			positions[currX][currY].x = currX;
 			positions[currX][currY].y = currY;
@@ -932,10 +936,11 @@ public class BoardFrame extends JFrame implements MouseListener{
 			positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, selectedPosition[0], selectedPosition[1]);
 			
 		} else if(!castled){
+			System.out.println("positions[selectedPosition[0]][selectedPosition[1]]" + positions[selectedPosition[0]][selectedPosition[1]].name + " positions[currX][currY] " + positions[currX][currY].name);
+			moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
 			positions[currX][currY] = new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]);
 			positions[currX][currY].x = currX;
 			positions[currX][currY].y = currY;
-			
 			positions[selectedPosition[0]][selectedPosition[1]] = new PiecePosition("none", -1, selectedPosition[0], selectedPosition[1]);
 		}
 		
@@ -951,36 +956,36 @@ public class BoardFrame extends JFrame implements MouseListener{
 			}
 		}
 		
-		if(!castled && !isEnPassant) {
-			System.out.printf("Name: %s, Color: %d\n", positions[currX][currY].name, positions[currX][currY].color);
-			moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
-		} else if(isEnPassant) { 
-			
-			if(turn == 0) {
-				moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX+1][currY]));
-			} else {
-				moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX-1][currY]));
-			}
-			moves[currMove].prevPosition.name = "p";
-			
-		} else {
-			if(right) {
-				moves[currMove] = new Move(true, 
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 3]),
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 2]),
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 1]));
-				
-			} else {
-				moves[currMove] = new Move(true, 
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 4]),
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 2]),
-						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 1]));
-			}
-			moves[currMove].prevPositionKing.name = "k";
-			moves[currMove].prevPositionRook.name = "r";
-		}
+//		if(!castled && !isEnPassant) {
+//			System.out.printf("Name: %s, Color: %d\n", positions[currX][currY].name, positions[currX][currY].color);
+//			moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]) , new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX][currY]));
+//		} else if(isEnPassant) { 
+//			
+//			if(turn == 0) {
+//				moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX+1][currY]));
+//			} else {
+//				moves[currMove] = new Move(new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), new PiecePosition(positions[currX][currY]), new PiecePosition(positions[currX-1][currY]));
+//			}
+//			moves[currMove].prevPosition.name = "p";
+//			
+//		} else {
+//			if(right) {
+//				moves[currMove] = new Move(true, 
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 3]),
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 2]),
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] + 1]));
+//				
+//			} else {
+//				moves[currMove] = new Move(true, 
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1]]), 
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 4]),
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 2]),
+//						new PiecePosition(positions[selectedPosition[0]][selectedPosition[1] - 1]));
+//			}
+//			moves[currMove].prevPositionKing.name = "k";
+//			moves[currMove].prevPositionRook.name = "r";
+//		}
 		currMove++;
 		
 		
@@ -992,6 +997,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		selectedPosition[0] = -1;
 		selectedPosition[1] = -1;
 		this.toggleTurn();
+//		printLastMove();
 	}
 	
 	private void checkCanChangePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
