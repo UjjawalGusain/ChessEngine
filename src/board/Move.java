@@ -4,7 +4,7 @@ public class Move {
 	public Boolean castleMove = false;
 	public PiecePosition prevPosition, currPosition;
 	public PiecePosition gotRemoved;
-	
+	public Boolean isPromotion = false;
 	public PiecePosition prevPositionKing, prevPositionRook, currPositionKing, currPositionRook;
 	
 	public Move(PiecePosition prevPosition, PiecePosition currPosition, PiecePosition gotRemoved) {

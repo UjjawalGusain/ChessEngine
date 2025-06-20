@@ -149,14 +149,15 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
 //		this.positions[7][2] = new PiecePosition("none", 1, 7, 2);
 //		this.positions[0][3] = new PiecePosition("none", 1, 0, 3);
+		
+		this.positions[1][1] = new PiecePosition("p", 0, 1, 1);
+		this.positions[0][1] = new PiecePosition("none", -1, 0, 1);
 	}
 	
 	public void setBoard() throws IOException {
-//		printLastMove();
-//		printBoardWithPositions(positions);
+		printBoardWithPositions(positions);
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
-//		Boolean hasPromotion = false;
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
@@ -169,8 +170,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 					promotionPosition[0] = i;
 					promotionPosition[1] = j;
 					PopupMenuPromotion pmp = new PopupMenuPromotion(this);
-//					hasPromotion = true;
 					isToBePromoted = true;
+					moves[currMove - 1].isPromotion = true;
 					jd.add(pmp);
 					pmp.setVisible(true);
 					jd.setVisible(true);
@@ -218,6 +219,7 @@ public class BoardFrame extends JFrame implements MouseListener{
         this.repaint();
         
     }
+	
 	
 	void printLastMove() {
 		int moveIndex = currMove - 1;
@@ -748,6 +750,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	private void undoMove() {
 		if(currMove == 0) return;
+		System.out.println("Before");
 		printLastMove();
 		
 		currMove--;
@@ -795,6 +798,9 @@ public class BoardFrame extends JFrame implements MouseListener{
 			positions[currentMove.prevPosition.x][currentMove.prevPosition.y] = new PiecePosition(positions[currentMove.currPosition.x][currentMove.currPosition.y]);
 			positions[currentMove.prevPosition.x][currentMove.prevPosition.y].x = x1;
 			positions[currentMove.prevPosition.x][currentMove.prevPosition.y].y = y1;
+			if(currentMove.isPromotion)
+				positions[currentMove.prevPosition.x][currentMove.prevPosition.y].name = "p";
+			
 			
 			if(x3 > x2) {
 				positions[x3][y3] = new PiecePosition("p", 1, x3, y3);
@@ -812,6 +818,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		
 		moves[currMove] = null;
+		
+		checkmate[0] = false;
+		checkmate[1] = false;
+		stalemate = false;
 		try {
 			setBoard();
 		} catch (IOException e) {

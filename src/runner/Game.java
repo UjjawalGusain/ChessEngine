@@ -18,10 +18,12 @@ public class Game {
 		BoardFrame board = new BoardFrame("Chess Game", this.playerColor, this.aiColor);
         board.setFirstTime();
         board.setBoard();
-        
-//        while(!board.didWin()) {
-//        	board.play();
-//        }
-        
 	}
+	
+	public void startAutomaticGame(Boolean visible, int depth) throws IOException {
+		BoardFrame board = new BoardFrame("Chess Game", this.playerColor, this.aiColor);
+        board.setFirstTime();
+        board.setBoard();
+	}
+	
 }
