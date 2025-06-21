@@ -22,8 +22,10 @@ public class Game {
 	
 	public void startAutomaticGame(Boolean visible, int depth) throws IOException {
 		BoardFrame board = new BoardFrame("Chess Game", this.playerColor, this.aiColor);
+		board.setIsVisible(visible);
         board.setFirstTime();
         board.setBoard();
+        board.testGame(depth);
 	}
 	
 }

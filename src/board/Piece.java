@@ -10,8 +10,8 @@ import javax.swing.JLabel;
 
 public class Piece extends JLabel {
 	private static final long serialVersionUID = 1L;
-	int color;
-	String name;
+	public int color;
+	public String name;
 	int x, y;
 	Boolean selected = false;
 	

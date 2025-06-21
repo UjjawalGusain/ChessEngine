@@ -7,6 +7,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -16,12 +19,12 @@ import javax.swing.PopupFactory;
 
 import promotion.PopupMenuPromotion;
 import win.PanelPopup;
-
+import timer.Helper;
 
 public class BoardFrame extends JFrame implements MouseListener{
 	private static final long serialVersionUID = 1L;
-	Boolean isPieceSelected = false;
-	int[] selectedPosition = {-1, -1};
+	public Boolean isPieceSelected = false;
+	public int[] selectedPosition = {-1, -1};
 	Boolean[] kingChecked = {false, false};
 	int playerOneColor;
 	int playerTwoColor;
@@ -29,10 +32,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 	public int[] queenSideKingRookMoved = {-1, -1};
 	public int[] kingSideKingRookMoved = {-1, -1};
 	Boolean stalemate = false;
-	
+	Popup po = null;
 	public Move moves[] = new Move[2500];
 	public int currMove = 0;
-	
+	Helper helper = new Helper();
 	JDialog jd;
 	
 	public int[] promotionPosition = {-1, -1};
@@ -46,6 +49,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 	Boolean promotionOccured = false;
 	public Boolean isToBePromoted = false;
 	public JButton button = new JButton("Undo");
+	public Boolean isBoardVisible = true;
+
 	public BoardFrame(String title, int playerOneColor, int playerTwoColor) throws IOException {
 		super(title);
 		this.setResizable(false);
@@ -66,6 +71,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.add(boardPanel);
 		this.add(button);
 		pack();
+	}
+	
+	public void setIsVisible(Boolean isBoardVisible) {
+		this.isBoardVisible = isBoardVisible;
 	}
 	
 	public void setFirstTime() {
@@ -149,13 +158,17 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
 //		this.positions[7][2] = new PiecePosition("none", 1, 7, 2);
 //		this.positions[0][3] = new PiecePosition("none", 1, 0, 3);
-		
-		this.positions[1][1] = new PiecePosition("p", 0, 1, 1);
-		this.positions[0][1] = new PiecePosition("none", -1, 0, 1);
+//		this.positions[0][0] = new PiecePosition("n", 1, 0, 0);
+//		this.positions[1][1] = new PiecePosition("p", 0, 1, 1);
+//		this.positions[0][1] = new PiecePosition("none", -1, 0, 1);
 	}
 	
 	public void setBoard() throws IOException {
-		printBoardWithPositions(positions);
+		
+		if(po != null && !checkmate[0] && !checkmate[1] && !stalemate) {
+			po.hide();
+		}
+		
 		this.remove(boardPanel);
 		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
 		for(int i = 0; i<8; i++) {
@@ -209,13 +222,13 @@ public class BoardFrame extends JFrame implements MouseListener{
         	PopupFactory pf = new PopupFactory();
         	int winPanelX = boardPanel.getX() + boardPanel.getWidth()/2 - 150;
         	int winPanelY = boardPanel.getY() + boardPanel.getHeight()/2;
-        	Popup po = pf.getPopup(boardPanel, winPanel, winPanelX, winPanelY);
+        	po = pf.getPopup(boardPanel, winPanel, winPanelX, winPanelY);
 
         	po.show();
         }
         
         pack();
-        this.setVisible(true);
+        this.setVisible(isBoardVisible);
         this.repaint();
         
     }
@@ -737,7 +750,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 			possibleMoves = playPawn(p, positions);
 			break;
 		default:
-			System.out.println("Selected none");
+//			System.out.println("Selected none");
 			break;
 		}
 		
@@ -748,10 +761,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.turn = this.turn == 1 ? 0 : 1;
 	}
 	
-	private void undoMove() {
+	public void undoMove() {
 		if(currMove == 0) return;
-		System.out.println("Before");
-		printLastMove();
+//		System.out.println("Before");
+//		printLastMove();
 		
 		currMove--;
 		Move currentMove = moves[currMove];
@@ -823,7 +836,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		checkmate[1] = false;
 		stalemate = false;
 		try {
-			setBoard();
+			if(isBoardVisible) this.setBoard();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -959,6 +972,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	private void checkCanChangePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 		
+//		System.out.printf("currX: %d, currY: %d, s[0]: %d, s[1]: %d\n", currX, currY, selectedPosition[0], selectedPosition[1]);
 		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
 		positions[currX][currY].x = currX;
 		positions[currX][currY].y = currY;
@@ -1119,6 +1133,72 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return true;
 	}
 	
+	
+	public void testGame(int depth) {
+		helper.setHelper(this, depth);
+		helper.run();
+	}
+	
+	
+	public Boolean playBySelf(PiecePosition selectedPiece, int depth) {
+		
+		selectedPosition[0] = selectedPiece.x;
+		selectedPosition[1] = selectedPiece.y;
+		
+		if(depth == 0) return false;
+		
+		int[][] futureMoves = this.play(this.turn, positions);
+		
+//		System.out.printf("selectedPosition[0]: %d, selectedPosition[1]: %d\n", selectedPosition[0], selectedPosition[1]);
+//		System.out.printf("Length: %d\n", futureMoves.length);
+		for(int[] futureMove : futureMoves) {
+			
+			int i = futureMove[0], j = futureMove[1];
+			PiecePosition[][] pc2 = getCopy(positions);
+//			System.out.printf("i: %d, j: %d\n", i, j);
+			checkCanChangePosition(i, j, futureMoves, pc2);
+			
+			if(!isGettingChecked(this.turn, pc2)) {
+				
+				changePosition(i, j, futureMoves, positions);
+				
+				int oppTurn = this.turn == 1 ? 0 : 1;
+				if(isGettingChecked(this.turn, positions)) {
+					kingChecked[this.turn] = true;
+
+					if(isGettingCheckmated(this.turn, positions)) {
+						checkmate[this.turn] = true;
+					}
+					
+				} else if(isGettingStalemate(this.turn, positions)) {
+					stalemate = true;
+				} else {
+					kingChecked[this.turn] = false;
+				}
+				
+				if(isGettingChecked(oppTurn, positions)) {
+					kingChecked[oppTurn] = true;
+				} else {
+					kingChecked[oppTurn] = false;
+				}
+				
+				try {
+					if(isBoardVisible) this.setBoard();
+					Helper.boardRun(depth-1, this);
+					undoMove();
+					toggleTurn();
+					selectedPosition[0] = selectedPiece.x;
+					selectedPosition[1] = selectedPiece.y;
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if(isToBePromoted) return;
@@ -1161,7 +1241,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 				
 			} else {
 				try {
-					this.setBoard();
+					if(isBoardVisible) this.setBoard();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -1200,7 +1280,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 		
 		try {
-			this.setBoard();
+			if(isBoardVisible) this.setBoard();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
