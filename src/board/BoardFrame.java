@@ -5,11 +5,13 @@ import java.awt.GridBagLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import Engine.Scorer;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -25,18 +27,19 @@ public class BoardFrame extends JFrame implements MouseListener{
 	private static final long serialVersionUID = 1L;
 	public Boolean isPieceSelected = false;
 	public int[] selectedPosition = {-1, -1};
-	Boolean[] kingChecked = {false, false};
+	public Boolean[] kingChecked = {false, false};
 	int playerOneColor;
 	int playerTwoColor;
 	public int turn = 0;
 	public int[] queenSideKingRookMoved = {-1, -1};
 	public int[] kingSideKingRookMoved = {-1, -1};
-	Boolean stalemate = false;
+	public Boolean stalemate = false;
 	Popup po = null;
 	public Move moves[] = new Move[2500];
 	public int currMove = 0;
 	Helper helper = new Helper();
 	JDialog jd;
+	
 	
 	public int[] promotionPosition = {-1, -1};
 	
@@ -49,7 +52,10 @@ public class BoardFrame extends JFrame implements MouseListener{
 	Boolean promotionOccured = false;
 	public Boolean isToBePromoted = false;
 	public JButton button = new JButton("Undo");
+	public JButton score = new JButton("Get Score");
 	public Boolean isBoardVisible = true;
+	private BufferedImage boardImage = ImageIO.read(new File("images/board.png"));
+	
 
 	public BoardFrame(String title, int playerOneColor, int playerTwoColor) throws IOException {
 		super(title);
@@ -59,17 +65,48 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.setLayout(new GridBagLayout());
 		this.playerOneColor = playerOneColor;
 		this.playerTwoColor = playerTwoColor;
-		boardPanel = new JPanelWithBackground("images/board.png", boardWidth, boardHeight);
-		
+		boardPanel = new JPanelWithBackground(boardImage, boardWidth, boardHeight);
+		BoardFrame bf = this;
 		button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
             	undoMove();
             	toggleTurn();
             }
         });
+		
+		score.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				System.out.println("New Score start");
+				int maxScore = Integer.MIN_VALUE;
+				int x = -1, y = -1;
+				for(int i = 0; i<8; i++) {
+					for(int j = 0; j<8; j++) {
+						
+						PiecePosition piece = positions[i][j];
+//						System.out.printf("From move [%d][%d] to ", i, j);
+						int score = Helper.recursiveBoardRunner(bf, piece, 3, turn, 1);
+						if(score >= maxScore) {
+							x = i;
+							y = j;
+							maxScore = score;
+							
+						}
+						
+						selectedPosition[0] = -1;
+				    	selectedPosition[1] = -1;
+//				    	System.out.printf("Score is %d\n", score);
+				  
+
+					}
+				}
+				System.out.printf("\nMax Score: %d\n", maxScore);
+				System.out.printf("Best move from: [%d][%d] to [%d][%d]\n\n", x, y, Helper.bestMoves[0], Helper.bestMoves[1]);
+			}
+		});
 			
 		this.add(boardPanel);
 		this.add(button);
+		this.add(score);
 		pack();
 	}
 	
@@ -147,12 +184,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 //		
 //		this.positions[4][2] = new PiecePosition("b", 0, 4, 2);
 //		this.positions[5][5] = new PiecePosition("q", 0, 5, 5);
-//		this.positions[6][0] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[5][2] = new PiecePosition("n", 1, 5, 2);
-//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[2][7] = new PiecePosition("r", 0, 2, 7);
-//		this.positions[6][3] = new PiecePosition("none", -1, -1, -1);
-//		this.positions[6][2] = new PiecePosition("none", -1, -1, -1);
 //		this.positions[1][2] = new PiecePosition("p", 0, 1, 2);
 //		this.positions[0][2] = new PiecePosition("none", -1, 0, 2);
 //		this.positions[6][2] = new PiecePosition("p", 1, 6, 2);
@@ -165,12 +198,16 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	public void setBoard() throws IOException {
 		
+		
+		
+		
+//		System.out.printf("Score for %d: %d\n", turn, Scorer.getScore(positions, turn));
 		if(po != null && !checkmate[0] && !checkmate[1] && !stalemate) {
 			po.hide();
 		}
 		
 		this.remove(boardPanel);
-		boardPanel = new JPanelWithBackground("images/board.png", this.boardWidth, this.boardHeight);
+		boardPanel = new JPanelWithBackground(boardImage, this.boardWidth, this.boardHeight);
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				board[i][j] = new Piece(positions[i][j].name, positions[i][j].color, i, j);
@@ -229,8 +266,8 @@ public class BoardFrame extends JFrame implements MouseListener{
         
         pack();
         this.setVisible(isBoardVisible);
+
         this.repaint();
-        
     }
 	
 	
@@ -587,7 +624,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
-	private Boolean isGettingChecked(int color, PiecePosition[][] positions) {
+	public Boolean isGettingChecked(int color, PiecePosition[][] positions) {
 		
 		ArrayList<int[][]> possibleAttacks = new ArrayList<>();
 		int enemyKingX = -1, enemyKingY = -1;
@@ -757,7 +794,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return possibleMoves;
 	}
 	
-	private void toggleTurn() {
+	public void toggleTurn() {
 		this.turn = this.turn == 1 ? 0 : 1;
 	}
 	
@@ -853,7 +890,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return false;
 	}
 	
-	private void changePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
+	public void changePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 				
 		if(positions[selectedPosition[0]][selectedPosition[1]].name == "r" && (positions[selectedPosition[0]][selectedPosition[1]].x == 7 || positions[selectedPosition[0]][selectedPosition[1]].x == 0)) { 
 			
@@ -970,7 +1007,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		this.toggleTurn();
 	}
 	
-	private void checkCanChangePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
+	public void checkCanChangePosition(int currX, int currY, int[][] futureMoves, PiecePosition[][] positions) {
 		
 //		System.out.printf("currX: %d, currY: %d, s[0]: %d, s[1]: %d\n", currX, currY, selectedPosition[0], selectedPosition[1]);
 		positions[currX][currY] = positions[selectedPosition[0]][selectedPosition[1]];
@@ -997,7 +1034,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		}
 	}
 	
-	private PiecePosition[][] getCopy(PiecePosition[][] positions) {
+	public PiecePosition[][] getCopy(PiecePosition[][] positions) {
 		PiecePosition[][] copy = new PiecePosition[8][8];
 		
 		for(int i = 0; i<8; i++) {
@@ -1008,7 +1045,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 		return copy;
 	}
 	
-	private Boolean isGettingStalemate(int color, PiecePosition[][] positions) {
+	public Boolean isGettingStalemate(int color, PiecePosition[][] positions) {
 		
 		int oppColor = color == 0 ? 1 : 0;
 		ArrayList<int[][]> possibleAttacks = new ArrayList<>();
@@ -1134,6 +1171,8 @@ public class BoardFrame extends JFrame implements MouseListener{
 	}
 	
 	
+	
+	
 	public void testGame(int depth) {
 		helper.setHelper(this, depth);
 		helper.run();
@@ -1144,7 +1183,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 		
 		selectedPosition[0] = selectedPiece.x;
 		selectedPosition[1] = selectedPiece.y;
-		
 		if(depth == 0) return false;
 		
 		int[][] futureMoves = this.play(this.turn, positions);
@@ -1201,6 +1239,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		
 		if(isToBePromoted) return;
 		Piece piece = (Piece) e.getComponent();
 		int i = piece.x, j = piece.y;

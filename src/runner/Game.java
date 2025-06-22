@@ -26,6 +26,7 @@ public class Game {
         board.setFirstTime();
         board.setBoard();
         board.testGame(depth);
+        
 	}
 	
 }
