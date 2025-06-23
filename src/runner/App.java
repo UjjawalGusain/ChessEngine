@@ -18,7 +18,7 @@ public class App {
 //		}
 		
 //		Game gameI = new Game(0);
-//		gameI.startAutomaticGame(true, 1);
+//		gameI.startAutomaticGame(false, 3);
 		Game game = new Game(0);
 		game.startGame();
 	}

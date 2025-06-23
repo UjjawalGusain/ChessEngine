@@ -34,8 +34,14 @@ public class Helper {
     }
     
     public static int recursiveBoardRunner(BoardFrame boardFrame, PiecePosition selectedPiece, int depth, int turn, int deep) {
+//    	System.out.println("Depth: " + deep);
+    	
+    	
+    	
     	boardFrame.selectedPosition[0] = selectedPiece.x;
     	boardFrame.selectedPosition[1] = selectedPiece.y;
+    	
+    	
 		int maxi = Integer.MIN_VALUE;
 		int mini = Integer.MAX_VALUE;
 		int score;
@@ -52,68 +58,73 @@ public class Helper {
 			boardFrame.checkCanChangePosition(i, j, futureMoves, pc2);
 			
 			if(!boardFrame.isGettingChecked(boardFrame.turn, pc2)) {
-				
 				boardFrame.changePosition(i, j, futureMoves, boardFrame.positions);
-				
 				int oppTurn = boardFrame.turn == 1 ? 0 : 1;
 				if(boardFrame.isGettingChecked(boardFrame.turn, boardFrame.positions)) {
 					boardFrame.kingChecked[boardFrame.turn] = true;
 
 					if(boardFrame.isGettingCheckmated(boardFrame.turn, boardFrame.positions)) {
 						boardFrame.checkmate[boardFrame.turn] = true;
-					}
+						boardFrame.undoMove();
+						boardFrame.toggleTurn();
+						boardFrame.selectedPosition[0] = selectedPiece.x;
+						boardFrame.selectedPosition[1] = selectedPiece.y;
+						return turn == boardFrame.turn ? -10000 : 10000;
+						
+					} 
 					
 				} else if(boardFrame.isGettingStalemate(boardFrame.turn, boardFrame.positions)) {
 					boardFrame.stalemate = true;
+					return -5000;
 				} else {
 					boardFrame.kingChecked[boardFrame.turn] = false;
 				}
-				
 				if(boardFrame.isGettingChecked(oppTurn, boardFrame.positions)) {
 					boardFrame.kingChecked[oppTurn] = true;
 				} else {
 					boardFrame.kingChecked[oppTurn] = false;
 				}
 				
-				int opp = turn == 0 ? 1 : 0;
-				score = Helper.boardRunScorer(depth-1, boardFrame, opp, deep);
-				if(score >= maxi) {
-					maxi = score > maxi ? score : maxi;
-					maxX = i;
-					maxY = j;
+				if(!boardFrame.checkmate[boardFrame.turn]) {			
+					int opp = turn == 0 ? 1 : 0;
+					score = Helper.boardRunScorer(depth-1, boardFrame, opp, deep+1);
+					if(score >= maxi) {
+						maxi = score > maxi ? score : maxi;
+						maxX = i;
+						maxY = j;
+					}
 					
+					if(score <= mini) {
+						mini = score < mini ? mini : score;
+						minX = i;
+						minY = j;
+						
+					}
 					if(deep == 1) {
 						bestMoves[0] = i;
 						bestMoves[1] = j;
-					}
-				}
-				
-				if(score < mini) {
-					mini = score < mini ? mini : score;
-					minX = i;
-					minY = j;
-				}
-				
+					
+						boardFrame.selectedPosition[0] = selectedPiece.x;
+						boardFrame.selectedPosition[1] = selectedPiece.y;
+					}	
+				} 
 				
 				boardFrame.undoMove();
 				boardFrame.toggleTurn();
 				boardFrame.selectedPosition[0] = selectedPiece.x;
 				boardFrame.selectedPosition[1] = selectedPiece.y;
+			} else {
+//				System.out.println("Is getting checked");
 			}
 			
-		}
+		} 
 		int val = turn == boardFrame.turn ? maxi : mini;
-//		if(deep == 1 && boardFrame.turn == turn) {
-//    		System.out.printf("[%d][%d]\n", maxX, maxY);
-//    	} else if(deep == 1) {
-//    		System.out.printf("[%d][%d]\n", minX, minY);
-//    	}
 		return val;
 	}
     
     public static int boardRunScorer(int depth, BoardFrame boardFrame, int turn, int deep) {
     	if(depth == 0) {
-    		int value = Scorer.getScore(boardFrame.positions, turn);
+    		int value = Scorer.getScore(boardFrame, boardFrame.positions, boardFrame.turn);
         	return value;
     	}
     	int maxi = Integer.MIN_VALUE;
@@ -123,14 +134,14 @@ public class Helper {
     		for(int j = 0; j<8; j++) {
     			if(boardFrame.positions[i][j].color == boardFrame.turn) {
     				int opp = turn == 0 ? 1 : 0;
-    				int score = recursiveBoardRunner(boardFrame, boardFrame.positions[i][j], depth - 1, turn, deep + 1);
-    				if(score > maxi) {
+    				int score = recursiveBoardRunner(boardFrame, boardFrame.positions[i][j], depth, turn, deep);
+    				if(score >= maxi) {
     					maxi = score > maxi ? score : maxi;
     					maxX = i;
     					maxY = j;
     				}
     				
-    				if(score < mini) {
+    				if(score <= mini) {
     					mini = score < mini ? mini : score;
     					minX = i;
     					minY = j;

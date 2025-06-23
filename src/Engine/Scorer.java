@@ -1,12 +1,20 @@
 package Engine;
 
+import board.BoardFrame;
 import board.PiecePosition;
 
 public class Scorer {
 
-	public static int getScore(PiecePosition[][] positions, int turn) {
+	public static int getScore(BoardFrame boardFrame, PiecePosition[][] positions, int turn) {
 		
 		int score = 0;
+		
+		PiecePosition[][] pc2 = boardFrame.getCopy(positions);
+		int opp = turn == 0 ? 1 : 0;
+		if(boardFrame.isGettingCheckmated(opp, pc2)) {
+			return turn == boardFrame.turn ? -10000 : 10000;
+		}
+		
 		for(int i = 0; i<8; i++) {
 			for(int j = 0; j<8; j++) {
 				

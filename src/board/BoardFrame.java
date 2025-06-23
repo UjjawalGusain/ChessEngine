@@ -52,7 +52,7 @@ public class BoardFrame extends JFrame implements MouseListener{
 	Boolean promotionOccured = false;
 	public Boolean isToBePromoted = false;
 	public JButton button = new JButton("Undo");
-	public JButton score = new JButton("Get Score");
+	public JButton score = new JButton("Play Best");
 	public Boolean isBoardVisible = true;
 	private BufferedImage boardImage = ImageIO.read(new File("images/board.png"));
 	
@@ -79,28 +79,43 @@ public class BoardFrame extends JFrame implements MouseListener{
 				System.out.println("New Score start");
 				int maxScore = Integer.MIN_VALUE;
 				int x = -1, y = -1;
+				bf.isBoardVisible = false;
+				int xx = -1, yy = -1;
 				for(int i = 0; i<8; i++) {
 					for(int j = 0; j<8; j++) {
 						
 						PiecePosition piece = positions[i][j];
-//						System.out.printf("From move [%d][%d] to ", i, j);
-						int score = Helper.recursiveBoardRunner(bf, piece, 3, turn, 1);
-						if(score >= maxScore) {
+						
+						int score = Helper.recursiveBoardRunner(bf, piece, 4, turn, 1);
+						if(score >= maxScore && Helper.bestMoves[0] != -1) {
 							x = i;
 							y = j;
-							maxScore = score;
 							
+							xx = Helper.bestMoves[0];
+							yy = Helper.bestMoves[1];
+							maxScore = score;
+							System.out.printf("Last Best move from: [%d][%d] to [%d][%d] with score: %d\n\n", x, y, xx, yy, score);
 						}
 						
 						selectedPosition[0] = -1;
 				    	selectedPosition[1] = -1;
-//				    	System.out.printf("Score is %d\n", score);
 				  
 
 					}
 				}
+				bf.isBoardVisible = true;
 				System.out.printf("\nMax Score: %d\n", maxScore);
-				System.out.printf("Best move from: [%d][%d] to [%d][%d]\n\n", x, y, Helper.bestMoves[0], Helper.bestMoves[1]);
+				System.out.printf("Best move from: [%d][%d] to [%d][%d]\n\n", x, y, xx, yy);
+				
+				int[][] fm = play(turn, positions);
+				selectedPosition[0] = x;
+		    	selectedPosition[1] = y;
+				changePosition(xx, yy, fm, positions);
+				try {
+					setBoard();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 			
@@ -875,7 +890,6 @@ public class BoardFrame extends JFrame implements MouseListener{
 		try {
 			if(isBoardVisible) this.setBoard();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
