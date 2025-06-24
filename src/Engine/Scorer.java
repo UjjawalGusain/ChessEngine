@@ -8,7 +8,7 @@ public class Scorer {
 	public static int getScore(BoardFrame boardFrame, PiecePosition[][] positions, int turn) {
 		
 		int score = 0;
-		
+		// get score function
 		PiecePosition[][] pc2 = boardFrame.getCopy(positions);
 		int opp = turn == 0 ? 1 : 0;
 		if(boardFrame.isGettingCheckmated(opp, pc2)) {
