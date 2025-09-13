@@ -1,5 +1,9 @@
 # Chess Game
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/e3cc68f9-54f8-4d97-96b1-6620ec286283" alt="chess_src_image" width="500" height="500" />
+</div>
+
 A Chess Game Engine implemented in Java with a graphical user interface (GUI) using Swing.
 
 ## Project Structure
